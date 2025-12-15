@@ -9,8 +9,8 @@ if (is_post()) {
     if ($username === '' || ($password === '' && empty($_POST['user_id']))) {
         flash('error', 'Username and password are required.');
     } else {
-        if (isset($_POST['user_id'])) {
-            $id = (int)$_POST['user_id'];
+        $id = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
+        if ($id > 0) {
             if ($password !== '') {
                 $hash = password_hash($password, PASSWORD_DEFAULT);
                 $stmt = $conn->prepare('UPDATE users SET username=?, role=?, password=? WHERE user_id=?');

@@ -6,8 +6,8 @@ if (is_post()) {
     if ($name === '') {
         flash('error', 'Customer name is required.');
     } else {
-        if (isset($_POST['customer_id'])) {
-            $id = (int)$_POST['customer_id'];
+        $id = isset($_POST['customer_id']) ? (int)$_POST['customer_id'] : 0;
+        if ($id > 0) {
             $stmt = $conn->prepare('UPDATE customers SET customer_name=?, contact_number=? WHERE customer_id=?');
             $stmt->bind_param('ssi', $name, $contact, $id);
             $stmt->execute();

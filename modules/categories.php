@@ -5,8 +5,8 @@ if (is_post()) {
     if ($name === '') {
         flash('error', 'Category name is required.');
     } else {
-        if (isset($_POST['category_id'])) {
-            $id = (int)$_POST['category_id'];
+        $id = isset($_POST['category_id']) ? (int)$_POST['category_id'] : 0;
+        if ($id > 0) {
             $stmt = $conn->prepare('UPDATE categories SET category_name=? WHERE category_id=?');
             $stmt->bind_param('si', $name, $id);
             $stmt->execute();

@@ -11,8 +11,8 @@ if (is_post()) {
     if ($name === '' || $categoryId === 0) {
         flash('error', 'Product name and category are required.');
     } else {
-        if (isset($_POST['product_id'])) {
-            $id = (int)$_POST['product_id'];
+        $id = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
+        if ($id > 0) {
             $stmt = $conn->prepare('UPDATE products SET category_id=?, product_name=?, price=?, stock=? WHERE product_id=?');
             $stmt->bind_param('isdii', $categoryId, $name, $price, $stock, $id);
             $stmt->execute();
