@@ -138,7 +138,7 @@ body {
 
 /* --- 2.2. Sidebar --- */
 .sidebar {
-    width: var(--sidebar-width);
+    width: 220px; /* slimmer to reduce scrollbar */
     position: sticky;
     top: 0;
     height: 100vh;
@@ -146,8 +146,9 @@ body {
     border-right: 1px solid var(--surface-border);
     box-shadow: var(--shadow-sm);
     overflow-y: auto;
-    padding: var(--spacing-unit);
+    padding: 0.75rem;
     transition: all 0.3s ease;
+    font-size: 0.95rem;
 }
 
 /* --- 2.3. Main Content Area --- */
@@ -184,15 +185,17 @@ main {
 .sidebar .list-group-item {
     display: flex;
     align-items: center;
+    gap: 0.5rem;
     border: none;
-    padding: 0.75rem 1rem;
-    margin-bottom: 0.25rem;
+    padding: 0.55rem 0.75rem;
+    margin-bottom: 0.2rem;
     border-radius: var(--radius-md);
     color: var(--text-secondary);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     transition: all 0.2s ease-in-out;
     cursor: pointer;
+    font-size: 0.95rem;
 }
 
 .sidebar .list-group-item:hover {
@@ -204,8 +207,10 @@ main {
 .sidebar .list-group-item.active {
     background-color: var(--primary-500);
     color: #ffffff;
-    font-weight: 600;
+    font-weight: 700;
     box-shadow: var(--shadow-md);
+    border-left: 4px solid #1e40af;
+    padding-left: 0.55rem;
 }
 
 .sidebar .list-group-item.active i {
@@ -296,7 +301,7 @@ table tbody tr:hover {
 
 .form-container {
     background-color: var(--surface-bg);
-    padding: 2rem;
+    padding: 1.25rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     border: 1px solid var(--surface-border);
@@ -317,7 +322,7 @@ table tbody tr:hover {
 .form-select {
     display: block;
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.6rem 0.85rem;
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
     color: var(--text-primary);
@@ -357,7 +362,7 @@ table tbody tr:hover {
 }
 
 .card-body {
-    padding: 1.5rem;
+    padding: 1.1rem;
 }
 
 /* --- 7.2. Buttons --- */
@@ -368,7 +373,7 @@ table tbody tr:hover {
     vertical-align: middle;
     user-select: none;
     border: 1px solid transparent;
-    padding: 0.75rem 1.5rem;
+    padding: 0.55rem 1.2rem;
     font-size: var(--font-size-base);
     line-height: var(--line-height-base);
     border-radius: var(--radius-md);
