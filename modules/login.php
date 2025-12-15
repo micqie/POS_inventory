@@ -37,26 +37,20 @@ if (is_post()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - POS Inventory</title>
-    <style>
-        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #111827; color: #fff; font-family: Arial, sans-serif; }
-        .card { width: 340px; background: #1f2937; padding: 18px; border-radius: 8px; }
-        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #374151; border-radius: 4px; background: #111827; color: #fff; }
-        button { width: 100%; padding: 10px; background: #2563eb; color: #fff; border: 0; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .error { background: #7f1d1d; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="card">
-        <h2>POS Inventory Login</h2>
+<body class="login-body">
+    <div class="login-card">
+        <h2 class="text-center mb-3">POS Inventory Login</h2>
         <?php if ($error): ?>
-            <div class="error"><?php echo sanitize($error); ?></div>
+            <div class="alert alert-danger"><?php echo sanitize($error); ?></div>
         <?php endif; ?>
-        <form method="post">
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Login</button>
+        <form method="post" class="login-form">
+            <input class="form-control mb-2" type="text" name="username" placeholder="Username" required>
+            <input class="form-control mb-3" type="password" name="password" placeholder="Password" required>
+            <button class="btn btn-primary w-100" type="submit">Login</button>
         </form>
-        <p style="font-size:12px; margin-top:8px;">Need an account? Run <code>seed_admin.php</code> once to create admin.</p>
+        <p class="login-hint">Need an account? Run <code>seed_admin.php</code> once to create admin.</p>
     </div>
 </body>
 </html>

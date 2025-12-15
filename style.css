@@ -186,3 +186,39 @@ form {
     font-size: 1rem;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
+
+/* --- 9. Login Page --- */
+.login-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #0f172a;
+    color: #fff;
+    font-family: var(--font-base);
+}
+
+.login-card {
+    width: 360px;
+    background: #111827;
+    padding: 24px;
+    border-radius: 10px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+.login-form .form-control {
+    background: #0b1220;
+    border: 1px solid #1f2937;
+    color: #fff;
+}
+
+.login-form .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.login-hint {
+    font-size: 12px;
+    margin-top: 10px;
+    color: #cbd5e1;
+}
