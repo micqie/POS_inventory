@@ -60,39 +60,56 @@ $users = $conn->query('SELECT * FROM users ORDER BY user_id DESC')->fetch_all(MY
 ?>
 <main>
     <h3>Users</h3>
-    <form method="post">
-        <input type="hidden" name="user_id" value="<?php echo $editItem['user_id'] ?? ''; ?>">
-        <label>Username</label>
-        <input type="text" name="username" required value="<?php echo sanitize($editItem['username'] ?? ''); ?>">
-        <label>Role</label>
-        <select name="role">
-            <option value="admin" <?php echo (($editItem['role'] ?? '') === 'admin') ? 'selected' : ''; ?>>admin</option>
-            <option value="cashier" <?php echo (($editItem['role'] ?? '') === 'cashier') ? 'selected' : ''; ?>>cashier</option>
-        </select>
-        <label>Password <?php echo $editItem ? '(leave blank to keep current)' : ''; ?></label>
-        <input type="password" name="password" <?php echo $editItem ? '' : 'required'; ?>>
-        <button class="btn" type="submit"><?php echo $editItem ? 'Update' : 'Add'; ?></button>
-        <?php if ($editItem): ?>
-            <a class="btn secondary" href="index.php?page=users">Cancel</a>
-        <?php endif; ?>
-    </form>
 
-    <table>
-        <thead><tr><th>ID</th><th>Username</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead>
-        <tbody>
-            <?php foreach ($users as $u): ?>
-                <tr>
-                    <td><?php echo $u['user_id']; ?></td>
-                    <td><?php echo sanitize($u['username']); ?></td>
-                    <td><?php echo $u['role']; ?></td>
-                    <td><?php echo $u['created_at']; ?></td>
-                    <td>
-                        <a class="btn secondary" href="index.php?page=users&edit=<?php echo $u['user_id']; ?>">Edit</a>
-                        <a class="btn danger" href="index.php?page=users&delete=<?php echo $u['user_id']; ?>" onclick="return confirm('Delete user?');">Delete</a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form method="post" class="row g-3">
+                <input type="hidden" name="user_id" value="<?php echo $editItem['user_id'] ?? ''; ?>">
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Username</label>
+                    <input class="form-control" type="text" name="username" required value="<?php echo sanitize($editItem['username'] ?? ''); ?>">
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Role</label>
+                    <select class="form-select" name="role">
+                        <option value="admin" <?php echo (($editItem['role'] ?? '') === 'admin') ? 'selected' : ''; ?>>admin</option>
+                        <option value="cashier" <?php echo (($editItem['role'] ?? '') === 'cashier') ? 'selected' : ''; ?>>cashier</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Password <?php echo $editItem ? '(leave blank to keep current)' : ''; ?></label>
+                    <input class="form-control" type="password" name="password" <?php echo $editItem ? '' : 'required'; ?>>
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button class="btn btn-primary" type="submit"><?php echo $editItem ? 'Update' : 'Add'; ?></button>
+                    <?php if ($editItem): ?>
+                        <a class="btn btn-secondary" href="index.php?page=users">Cancel</a>
+                    <?php endif; ?>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light"><tr><th>ID</th><th>Username</th><th>Role</th><th>Created</th><th class="text-end">Actions</th></tr></thead>
+                <tbody>
+                    <?php foreach ($users as $u): ?>
+                        <tr>
+                            <td><?php echo $u['user_id']; ?></td>
+                            <td><?php echo sanitize($u['username']); ?></td>
+                            <td><?php echo $u['role']; ?></td>
+                            <td><?php echo $u['created_at']; ?></td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-secondary" href="index.php?page=users&edit=<?php echo $u['user_id']; ?>">Edit</a>
+                                <a class="btn btn-sm btn-outline-danger" href="index.php?page=users&delete=<?php echo $u['user_id']; ?>" onclick="return confirm('Delete user?');">Delete</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </main>
 

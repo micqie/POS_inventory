@@ -41,7 +41,7 @@ $productQty = array_map(fn($r) => (int)$r['qty'], $topProducts);
     <h3>Reports</h3>
     <div class="row g-4">
         <div class="col-12 col-lg-6">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="card-title mb-3">Sales (Last 7 Days)</h5>
                     <canvas id="salesChart" height="200"></canvas>
@@ -49,7 +49,7 @@ $productQty = array_map(fn($r) => (int)$r['qty'], $topProducts);
             </div>
         </div>
         <div class="col-12 col-lg-6">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h5 class="card-title mb-3">Top Products (Qty Sold)</h5>
                     <canvas id="productsChart" height="200"></canvas>

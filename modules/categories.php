@@ -45,33 +45,46 @@ $categories = $conn->query('SELECT * FROM categories ORDER BY category_id DESC')
 ?>
 <main>
     <h3>Categories</h3>
-    <form method="post">
-        <input type="hidden" name="category_id" value="<?php echo $editItem['category_id'] ?? ''; ?>">
-        <label>Name</label>
-        <input type="text" name="category_name" required value="<?php echo sanitize($editItem['category_name'] ?? ''); ?>">
-        <button class="btn" type="submit"><?php echo $editItem ? 'Update' : 'Add'; ?></button>
-        <?php if ($editItem): ?>
-            <a class="btn secondary" href="index.php?page=categories">Cancel</a>
-        <?php endif; ?>
-    </form>
 
-    <table>
-        <thead>
-            <tr><th>ID</th><th>Name</th><th>Created</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-            <?php foreach ($categories as $cat): ?>
-                <tr>
-                    <td><?php echo $cat['category_id']; ?></td>
-                    <td><?php echo sanitize($cat['category_name']); ?></td>
-                    <td><?php echo $cat['created_at']; ?></td>
-                    <td>
-                        <a class="btn secondary" href="index.php?page=categories&edit=<?php echo $cat['category_id']; ?>">Edit</a>
-                        <a class="btn danger" href="index.php?page=categories&delete=<?php echo $cat['category_id']; ?>" onclick="return confirm('Delete category?');">Delete</a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form method="post" class="row g-3">
+        <input type="hidden" name="category_id" value="<?php echo $editItem['category_id'] ?? ''; ?>">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <label class="form-label">Name</label>
+                    <input class="form-control" type="text" name="category_name" required value="<?php echo sanitize($editItem['category_name'] ?? ''); ?>">
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button class="btn btn-primary" type="submit"><?php echo $editItem ? 'Update' : 'Add'; ?></button>
+                    <?php if ($editItem): ?>
+                        <a class="btn btn-secondary" href="index.php?page=categories">Cancel</a>
+                    <?php endif; ?>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr><th>ID</th><th>Name</th><th>Created</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($categories as $cat): ?>
+                        <tr>
+                            <td><?php echo $cat['category_id']; ?></td>
+                            <td><?php echo sanitize($cat['category_name']); ?></td>
+                            <td><?php echo $cat['created_at']; ?></td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-secondary" href="index.php?page=categories&edit=<?php echo $cat['category_id']; ?>">Edit</a>
+                                <a class="btn btn-sm btn-outline-danger" href="index.php?page=categories&delete=<?php echo $cat['category_id']; ?>" onclick="return confirm('Delete category?');">Delete</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </main>
 

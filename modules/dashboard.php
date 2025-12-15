@@ -11,7 +11,7 @@ foreach ($tables as $tbl) {
     <h3>Dashboard</h3>
     <div class="row g-3 dashboard-cards">
         <div class="col-12 col-md-6 col-lg-4">
-            <div class="card metric-card border-0 shadow-sm">
+            <div class="card metric-card border-0 shadow-sm h-100">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-muted mb-1">Products</p>
@@ -22,7 +22,7 @@ foreach ($tables as $tbl) {
             </div>
         </div>
         <div class="col-12 col-md-6 col-lg-4">
-            <div class="card metric-card border-0 shadow-sm">
+            <div class="card metric-card border-0 shadow-sm h-100">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-muted mb-1">Categories</p>
@@ -33,7 +33,7 @@ foreach ($tables as $tbl) {
             </div>
         </div>
         <div class="col-12 col-md-6 col-lg-4">
-            <div class="card metric-card border-0 shadow-sm">
+            <div class="card metric-card border-0 shadow-sm h-100">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-muted mb-1">Suppliers</p>
@@ -44,7 +44,7 @@ foreach ($tables as $tbl) {
             </div>
         </div>
         <div class="col-12 col-md-6 col-lg-4">
-            <div class="card metric-card border-0 shadow-sm">
+            <div class="card metric-card border-0 shadow-sm h-100">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-muted mb-1">Customers</p>
@@ -55,7 +55,7 @@ foreach ($tables as $tbl) {
             </div>
         </div>
         <div class="col-12 col-md-6 col-lg-4">
-            <div class="card metric-card border-0 shadow-sm">
+            <div class="card metric-card border-0 shadow-sm h-100">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <p class="text-muted mb-1">Sales</p>

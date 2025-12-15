@@ -56,49 +56,68 @@ $products = $conn->query('
 ?>
 <main>
     <h3>Products</h3>
-    <form method="post">
-        <input type="hidden" name="product_id" value="<?php echo $editItem['product_id'] ?? ''; ?>">
-        <label>Name</label>
-        <input type="text" name="product_name" required value="<?php echo sanitize($editItem['product_name'] ?? ''); ?>">
-        <label>Category</label>
-        <select name="category_id" required>
-            <option value="">Select category</option>
-            <?php foreach ($categories as $cat): ?>
-                <option value="<?php echo $cat['category_id']; ?>" <?php echo isset($editItem['category_id']) && (int)$editItem['category_id'] === (int)$cat['category_id'] ? 'selected' : ''; ?>>
-                    <?php echo sanitize($cat['category_name']); ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-        <label>Price</label>
-        <input type="number" step="0.01" name="price" required value="<?php echo $editItem['price'] ?? '0'; ?>">
-        <label>Stock</label>
-        <input type="number" name="stock" required value="<?php echo $editItem['stock'] ?? '0'; ?>">
-        <button class="btn" type="submit"><?php echo $editItem ? 'Update' : 'Add'; ?></button>
-        <?php if ($editItem): ?>
-            <a class="btn secondary" href="index.php?page=products">Cancel</a>
-        <?php endif; ?>
-    </form>
 
-    <table>
-        <thead>
-            <tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Created</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-            <?php foreach ($products as $p): ?>
-                <tr>
-                    <td><?php echo $p['product_id']; ?></td>
-                    <td><?php echo sanitize($p['product_name']); ?></td>
-                    <td><?php echo sanitize($p['category_name']); ?></td>
-                    <td><?php echo number_format($p['price'], 2); ?></td>
-                    <td><?php echo $p['stock']; ?></td>
-                    <td><?php echo $p['created_at']; ?></td>
-                    <td>
-                        <a class="btn secondary" href="index.php?page=products&edit=<?php echo $p['product_id']; ?>">Edit</a>
-                        <a class="btn danger" href="index.php?page=products&delete=<?php echo $p['product_id']; ?>" onclick="return confirm('Delete product?');">Delete</a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form method="post" class="row g-3">
+                <input type="hidden" name="product_id" value="<?php echo $editItem['product_id'] ?? ''; ?>">
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Name</label>
+                    <input class="form-control" type="text" name="product_name" required value="<?php echo sanitize($editItem['product_name'] ?? ''); ?>">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" name="category_id" required>
+                        <option value="">Select category</option>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?php echo $cat['category_id']; ?>" <?php echo isset($editItem['category_id']) && (int)$editItem['category_id'] === (int)$cat['category_id'] ? 'selected' : ''; ?>>
+                                <?php echo sanitize($cat['category_name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Price</label>
+                    <input class="form-control" type="number" step="0.01" name="price" required value="<?php echo $editItem['price'] ?? '0'; ?>">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Stock</label>
+                    <input class="form-control" type="number" name="stock" required value="<?php echo $editItem['stock'] ?? '0'; ?>">
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button class="btn btn-primary" type="submit"><?php echo $editItem ? 'Update' : 'Add'; ?></button>
+                    <?php if ($editItem): ?>
+                        <a class="btn btn-secondary" href="index.php?page=products">Cancel</a>
+                    <?php endif; ?>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Created</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($products as $p): ?>
+                        <tr>
+                            <td><?php echo $p['product_id']; ?></td>
+                            <td><?php echo sanitize($p['product_name']); ?></td>
+                            <td><?php echo sanitize($p['category_name']); ?></td>
+                            <td><?php echo number_format($p['price'], 2); ?></td>
+                            <td><?php echo $p['stock']; ?></td>
+                            <td><?php echo $p['created_at']; ?></td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-secondary" href="index.php?page=products&edit=<?php echo $p['product_id']; ?>">Edit</a>
+                                <a class="btn btn-sm btn-outline-danger" href="index.php?page=products&delete=<?php echo $p['product_id']; ?>" onclick="return confirm('Delete product?');">Delete</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </main>
 

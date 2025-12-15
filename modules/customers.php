@@ -46,36 +46,51 @@ $customers = $conn->query('SELECT * FROM customers ORDER BY customer_id DESC')->
 ?>
 <main>
     <h3>Customers</h3>
-    <form method="post">
-        <input type="hidden" name="customer_id" value="<?php echo $editItem['customer_id'] ?? ''; ?>">
-        <label>Name</label>
-        <input type="text" name="customer_name" required value="<?php echo sanitize($editItem['customer_name'] ?? ''); ?>">
-        <label>Contact</label>
-        <input type="text" name="contact_number" value="<?php echo sanitize($editItem['contact_number'] ?? ''); ?>">
-        <button class="btn" type="submit"><?php echo $editItem ? 'Update' : 'Add'; ?></button>
-        <?php if ($editItem): ?>
-            <a class="btn secondary" href="index.php?page=customers">Cancel</a>
-        <?php endif; ?>
-    </form>
 
-    <table>
-        <thead>
-            <tr><th>ID</th><th>Name</th><th>Contact</th><th>Created</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-            <?php foreach ($customers as $c): ?>
-                <tr>
-                    <td><?php echo $c['customer_id']; ?></td>
-                    <td><?php echo sanitize($c['customer_name']); ?></td>
-                    <td><?php echo sanitize($c['contact_number']); ?></td>
-                    <td><?php echo $c['created_at']; ?></td>
-                    <td>
-                        <a class="btn secondary" href="index.php?page=customers&edit=<?php echo $c['customer_id']; ?>">Edit</a>
-                        <a class="btn danger" href="index.php?page=customers&delete=<?php echo $c['customer_id']; ?>" onclick="return confirm('Delete customer?');">Delete</a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form method="post" class="row g-3">
+                <input type="hidden" name="customer_id" value="<?php echo $editItem['customer_id'] ?? ''; ?>">
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Name</label>
+                    <input class="form-control" type="text" name="customer_name" required value="<?php echo sanitize($editItem['customer_name'] ?? ''); ?>">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Contact</label>
+                    <input class="form-control" type="text" name="contact_number" value="<?php echo sanitize($editItem['contact_number'] ?? ''); ?>">
+                </div>
+                <div class="col-12 d-flex gap-2">
+                    <button class="btn btn-primary" type="submit"><?php echo $editItem ? 'Update' : 'Add'; ?></button>
+                    <?php if ($editItem): ?>
+                        <a class="btn btn-secondary" href="index.php?page=customers">Cancel</a>
+                    <?php endif; ?>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr><th>ID</th><th>Name</th><th>Contact</th><th>Created</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($customers as $c): ?>
+                        <tr>
+                            <td><?php echo $c['customer_id']; ?></td>
+                            <td><?php echo sanitize($c['customer_name']); ?></td>
+                            <td><?php echo sanitize($c['contact_number']); ?></td>
+                            <td><?php echo $c['created_at']; ?></td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-secondary" href="index.php?page=customers&edit=<?php echo $c['customer_id']; ?>">Edit</a>
+                                <a class="btn btn-sm btn-outline-danger" href="index.php?page=customers&delete=<?php echo $c['customer_id']; ?>" onclick="return confirm('Delete customer?');">Delete</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </main>
 

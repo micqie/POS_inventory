@@ -38,47 +38,66 @@ $transactions = $conn->query('
 ?>
 <main>
     <h3>Inventory Transactions</h3>
-    <form method="post">
-        <label>Product</label>
-        <select name="product_id" required>
-            <option value="">Select product</option>
-            <?php foreach ($products as $p): ?>
-                <option value="<?php echo $p['product_id']; ?>"><?php echo sanitize($p['product_name']); ?></option>
-            <?php endforeach; ?>
-        </select>
-        <label>Supplier (for IN)</label>
-        <select name="supplier_id">
-            <option value="">None</option>
-            <?php foreach ($suppliers as $s): ?>
-                <option value="<?php echo $s['supplier_id']; ?>"><?php echo sanitize($s['supplier_name']); ?></option>
-            <?php endforeach; ?>
-        </select>
-        <label>Quantity</label>
-        <input type="number" name="quantity" min="1" required>
-        <label>Type</label>
-        <select name="transaction_type">
-            <option value="in">In</option>
-            <option value="out">Out</option>
-        </select>
-        <button class="btn" type="submit">Record</button>
-    </form>
 
-    <table>
-        <thead>
-            <tr><th>ID</th><th>Product</th><th>Supplier</th><th>Qty</th><th>Type</th><th>Date</th></tr>
-        </thead>
-        <tbody>
-            <?php foreach ($transactions as $t): ?>
-                <tr>
-                    <td><?php echo $t['transaction_id']; ?></td>
-                    <td><?php echo sanitize($t['product_name']); ?></td>
-                    <td><?php echo sanitize($t['supplier_name']); ?></td>
-                    <td><?php echo $t['quantity']; ?></td>
-                    <td><?php echo strtoupper($t['transaction_type']); ?></td>
-                    <td><?php echo $t['transaction_date']; ?></td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form method="post" class="row g-3">
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Product</label>
+                    <select class="form-select" name="product_id" required>
+                        <option value="">Select product</option>
+                        <?php foreach ($products as $p): ?>
+                            <option value="<?php echo $p['product_id']; ?>"><?php echo sanitize($p['product_name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Supplier (for IN)</label>
+                    <select class="form-select" name="supplier_id">
+                        <option value="">None</option>
+                        <?php foreach ($suppliers as $s): ?>
+                            <option value="<?php echo $s['supplier_id']; ?>"><?php echo sanitize($s['supplier_name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label">Quantity</label>
+                    <input class="form-control" type="number" name="quantity" min="1" required>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label">Type</label>
+                    <select class="form-select" name="transaction_type">
+                        <option value="in">In</option>
+                        <option value="out">Out</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-primary" type="submit">Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr><th>ID</th><th>Product</th><th>Supplier</th><th>Qty</th><th>Type</th><th>Date</th></tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($transactions as $t): ?>
+                        <tr>
+                            <td><?php echo $t['transaction_id']; ?></td>
+                            <td><?php echo sanitize($t['product_name']); ?></td>
+                            <td><?php echo sanitize($t['supplier_name']); ?></td>
+                            <td><?php echo $t['quantity']; ?></td>
+                            <td><?php echo strtoupper($t['transaction_type']); ?></td>
+                            <td><?php echo $t['transaction_date']; ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </main>
 

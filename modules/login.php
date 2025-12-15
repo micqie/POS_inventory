@@ -23,7 +23,7 @@ if (is_post()) {
         if ($row = $result->fetch_assoc()) {
             if (password_verify($password, $row['password'])) {
                 $_SESSION['user'] = $row;
-                header('Location: ../index.php');
+                header('Location: index.php');
                 exit;
             }
         }
