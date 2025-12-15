@@ -1,0 +1,188 @@
+/* --- 1. Base & Reset --- */
+:root {
+    /* Color Palette */
+    --primary-color: #007bff; /* A vibrant blue for main actions */
+    --secondary-color: #6c757d; /* Muted color for secondary info */
+    --success-color: #28a745; /* Green for positive actions (e.g., Save, Stock Added) */
+    --danger-color: #dc3545; /* Red for destructive actions (e.g., Delete, Low Stock) */
+    --warning-color: #ffc107; /* Yellow for alerts/warnings */
+    --background-light: #f4f7f9; /* Lighter background */
+    --background-white: #ffffff; /* White card/form background */
+    --border-color: #dee2e6; /* Light border */
+    
+    /* Typography */
+    --font-base: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-size-base: 1rem;
+    --spacing-unit: 1rem;
+}
+
+body {
+    background-color: var(--background-light);
+    font-family: var(--font-base);
+    color: #343a40; /* Darker text for readability */
+    line-height: 1.6;
+}
+
+/* --- 2. Layout & Structure --- */
+
+/* Ensures the sidebar is functional and visually separated */
+.sidebar {
+    position: sticky;
+    top: 56px; /* Assumes a standard header/navbar height */
+    padding-top: var(--spacing-unit);
+    height: calc(100vh - 56px); /* Fills remaining viewport height */
+    background-color: var(--background-white);
+    border-right: 1px solid var(--border-color);
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+    overflow-y: auto; /* Allows scrolling for long menus */
+}
+
+/* Main Content Area - Adds padding for breathing room */
+main {
+    padding: 1.5rem 2rem;
+}
+
+/* --- 3. Navigation (Sidebar) --- */
+
+.sidebar .list-group-item {
+    border: none;
+    padding: 0.75rem 1rem;
+    margin-bottom: 2px;
+    transition: all 0.2s ease-in-out;
+    font-weight: 500;
+}
+
+.sidebar .list-group-item:hover {
+    background-color: #e9ecef; /* Subtle hover effect */
+    color: #000;
+}
+
+.sidebar .list-group-item.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--background-white);
+    border-radius: 4px; /* Slight rounding for the active state */
+    /* Add a small indicator for the active state */
+    border-left: 4px solid var(--warning-color); 
+    padding-left: calc(1rem - 4px); /* Adjust padding due to border */
+}
+
+/* --- 4. Content Typography & Spacing --- */
+
+main h3, main h4 {
+    margin-top: 2rem; /* More spacing above section headers */
+    margin-bottom: 1rem;
+    color: #343a40; /* Consistent header color */
+    border-bottom: 2px solid #e9ecef; /* A light separator */
+    padding-bottom: 0.3rem;
+}
+
+/* --- 5. Data Visualization (Tables) --- */
+
+table {
+    width: 100%;
+    background: var(--background-white);
+    border-collapse: separate; /* Allows for border-radius */
+    border-spacing: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 6px; /* Rounded corners for the entire table */
+    overflow: hidden; /* Important for containing rounded corners */
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Subtle elevation */
+}
+
+table th {
+    background-color: #e9ecef; /* Lighter header background */
+    color: #495057;
+    font-weight: 600;
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #f8f9fa; /* Very light separator for rows */
+    transition: background-color 0.2s;
+}
+
+table tbody tr:hover {
+    background-color: #f1f3f5; /* Subtle row hover for better scanning */
+}
+
+/* --- 6. Forms & Inputs --- */
+
+form {
+    background: var(--background-white);
+    padding: 1.5rem; /* Increased padding */
+    border-radius: 8px; /* Slightly more rounded */
+    border: 1px solid var(--border-color);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05); /* Clear elevation for forms */
+}
+
+/* Input/Textarea/Select specific styles (assuming you use Bootstrap's .form-control) */
+.form-control {
+    border-color: var(--border-color);
+    box-shadow: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Primary color focus ring */
+}
+
+/* --- 7. Utility & Custom Components (POS Specific) --- */
+
+/* Styling for a "Card" or Dashboard widget */
+.card {
+    background-color: var(--background-white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+}
+
+/* Status Indicators for Inventory (Requires HTML classes like .stock-high, .stock-low) */
+.stock-low {
+    color: var(--danger-color);
+    font-weight: 700;
+}
+
+.stock-ok {
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+/* --- 8. Dashboard Metrics --- */
+.dashboard-cards .metric-card {
+    border-radius: 10px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.dashboard-cards .metric-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
