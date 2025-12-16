@@ -1,4 +1,5 @@
 <?php
+// ... (Your PHP code remains the same, included here for completeness)
 require_once __DIR__ . '/../connect_db.php';
 require_once __DIR__ . '/../functions.php';
 
@@ -43,49 +44,60 @@ if (is_post()) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
 </head>
+
 <body>
     <div class="auth-container">
         <div class="auth-card lift-hover">
-            <div class="auth-header">
-                <h2>POS Inventory</h2>
-                <p>Secure staff sign-in</p>
+            <div class="split-card-content">
+
+                <div class="auth-visual-left">
+                    <div class="auth-visual-overlay">
+
+                    </div>
+                </div>
+
+                <div class="auth-form-right">
+                    <div class="auth-header">
+                        <i class="bi bi-shop-window" style="font-size: 2.5rem; color: var(--primary-600); margin-bottom: 0.5rem; display: block;"></i>
+                        <h2>POS Inventory</h2>
+                        <p>Secure staff sign-in</p>
+                    </div>
+
+                    <?php if ($error): ?>
+                        <div class="alert alert-danger"><?php echo sanitize($error); ?></div>
+                    <?php endif; ?>
+
+                    <form method="post" class="login-form">
+                        <div class="form-group">
+                            <label class="form-label" for="username">Username</label>
+                            <input
+                                class="form-control"
+                                id="username"
+                                type="text"
+                                name="username"
+                                placeholder="Enter your username"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="password">Password</label>
+                            <input
+                                class="form-control"
+                                id="password"
+                                type="password"
+                                name="password"
+                                placeholder="Enter your password"
+                                required
+                            >
+                        </div>
+
+                        <button class="btn btn-primary w-100" type="submit">Sign in</button>
+                    </form>
+
+
+                </div>
             </div>
-
-            <?php if ($error): ?>
-                <div class="alert alert-danger"><?php echo sanitize($error); ?></div>
-            <?php endif; ?>
-
-            <form method="post" class="login-form">
-                <div class="form-group">
-                    <label class="form-label" for="username">Username</label>
-                    <input
-                        class="form-control"
-                        id="username"
-                        type="text"
-                        name="username"
-                        placeholder="Enter your username"
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="password">Password</label>
-                    <input
-                        class="form-control"
-                        id="password"
-                        type="password"
-                        name="password"
-                        placeholder="Enter your password"
-                        required
-                    >
-                </div>
-
-                <button class="btn btn-primary w-100" type="submit">Sign in</button>
-            </form>
-
-            <p class="auth-hint">
-                First-time setup? Run <code>seed_admin.php</code> once to create the initial administrator account.
-            </p>
         </div>
     </div>
 </body>

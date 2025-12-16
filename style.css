@@ -696,25 +696,112 @@ table tbody tr:last-child td {
 
 .shadow-sm { box-shadow: var(--shadow-sm); }
 
-/* --- 15. Authentication Page --- */
+/* ===================================
+   1. GLOBAL/VARIABLE-BASED STYLES (Keep existing)
+   =================================== */
+
 .auth-container {
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
     padding: var(--spacing-lg);
-    background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+    background: linear-gradient(135deg, var(--primary-100) 0%, var(--bg-secondary) 100%);
+    font-family: var(--font-family);
 }
 
 .auth-card {
-    width: 100%;
-    max-width: 440px;
+    /* **MAJOR CHANGE:** Increased max-width for the split layout */
+    max-width: 850px;
+    width: 90%; /* Wider on smaller screens */
     background: var(--bg-primary);
-    padding: var(--spacing-2xl);
+    padding: 0; /* Remove padding here, it goes inside the columns */
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xl);
-    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-xl); /* Stronger shadow suits the larger card */
+    border: none; /* Keep border clean */
+    overflow: hidden; /* Crucial: Clips the image and corners */
 }
+
+/* Lift Effect Enhancements (Keep existing) */
+.lift-hover {
+    transition: var(--transition);
+}
+
+.lift-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 30px 60px -12px rgb(0 0 0 / 0.3), var(--shadow-xl);
+}
+
+
+/* ===================================
+   2. SPLIT LAYOUT (NEW)
+   =================================== */
+
+.split-card-content {
+    display: grid;
+    /* Define two columns: 1.2x the width of a fraction unit, and 1x unit */
+    grid-template-columns: 1.2fr 1fr;
+    min-height: 500px; /* Set a minimum height for the card */
+}
+
+/* --- LEFT COLUMN: VISUAL/IMAGE --- */
+
+.auth-visual-left {
+    /* Use a background image URL here. Replace with your actual image path or data URL. */
+    background: url('images/background.png') no-repeat center;
+    background-size: cover;
+    position: relative;
+    padding: var(--spacing-2xl);
+    display: flex;
+    align-items: flex-end; /* Align content to the bottom */
+}
+
+.auth-visual-overlay {
+    /* Dark overlay for better text readability */
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        to top,
+        rgba(2, 132, 199, 0.75) 0%, /* primary-600 with opacity */
+        rgba(0, 0, 0, 0) 50%
+    );
+    z-index: 1;
+}
+
+.auth-visual-left .visual-text,
+.auth-visual-left h3 {
+    position: relative;
+    z-index: 2;
+    color: var(--bg-primary); /* White text */
+}
+
+.auth-visual-left .visual-text {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    opacity: 0.8;
+    margin-bottom: var(--spacing-xs);
+}
+
+.auth-visual-left h3 {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    margin: 0;
+}
+
+/* --- RIGHT COLUMN: FORM --- */
+
+.auth-form-right {
+    padding: var(--spacing-2xl);
+    background: var(--bg-primary);
+}
+
+
+/* ===================================
+   3. HEADER & FORM (Adjusted for padding)
+   =================================== */
 
 .auth-header {
     text-align: center;
@@ -722,45 +809,48 @@ table tbody tr:last-child td {
 }
 
 .auth-header h2 {
-    font-size: var(--font-size-3xl);
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-2xl); /* Slightly smaller in the split view */
+    font-weight: 800;
+    color: var(--primary-700);
+    margin-bottom: var(--spacing-xs);
+    letter-spacing: -0.5px;
 }
 
-.auth-header p {
-    color: var(--text-secondary);
-    font-size: var(--font-size-base);
-}
+/* The rest of the Form, Button, and Alert styles
+   (Sections 4, 5, 6) can remain as they were in your previous refined code,
+   as the variables handle the styling within the right-hand column.
 
-.login-form {
-    margin-bottom: var(--spacing-lg);
-}
+   However, for mobile responsiveness, we need a media query:
+*/
 
-.auth-hint {
-    font-size: var(--font-size-sm);
-    color: var(--text-muted);
-    text-align: center;
-    margin-top: var(--spacing-lg);
-    padding-top: var(--spacing-lg);
-    border-top: 1px solid var(--border-light);
-}
+/* ===================================
+   4. MOBILE RESPONSIVENESS
+   =================================== */
 
-.auth-hint code {
-    background: var(--bg-tertiary);
-    padding: 2px 6px;
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    color: var(--primary-600);
-}
+@media (max-width: 768px) {
+    .split-card-content {
+        /* Collapse to a single column stack on mobile */
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
 
-.lift-hover {
-    transition: var(--transition);
-}
+    .auth-card {
+        max-width: 440px; /* Revert to single column max-width */
+    }
 
-.lift-hover:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-xl);
+    .auth-visual-left {
+        /* Reduce the image/visual height on mobile */
+        min-height: 200px;
+    }
+
+    .auth-visual-overlay {
+        /* Adjust overlay gradient on mobile */
+        background: linear-gradient(
+            to top,
+            rgba(2, 132, 199, 0.85) 0%,
+            rgba(0, 0, 0, 0) 70%
+        );
+    }
 }
 
 /* --- 16. Footer --- */
