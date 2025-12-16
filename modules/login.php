@@ -37,21 +37,52 @@ if (is_post()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - POS Inventory</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./style.css">
 </head>
-<body class="login-body">
-    <div class="login-card">
-        <h2 class="text-center mb-3">POS Inventory Login</h2>
-        <?php if ($error): ?>
-            <div class="alert alert-danger"><?php echo sanitize($error); ?></div>
-        <?php endif; ?>
-        <form method="post" class="login-form">
-            <input class="form-control mb-2" type="text" name="username" placeholder="Username" required>
-            <input class="form-control mb-3" type="password" name="password" placeholder="Password" required>
-            <button class="btn btn-primary w-100" type="submit">Login</button>
-        </form>
-        <p class="login-hint">Need an account? Run <code>seed_admin.php</code> once to create admin.</p>
+<body>
+    <div class="auth-container">
+        <div class="auth-card lift-hover">
+            <div class="auth-header">
+                <h2>POS Inventory</h2>
+                <p>Secure staff sign-in</p>
+            </div>
+
+            <?php if ($error): ?>
+                <div class="alert alert-danger"><?php echo sanitize($error); ?></div>
+            <?php endif; ?>
+
+            <form method="post" class="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username</label>
+                    <input
+                        class="form-control"
+                        id="username"
+                        type="text"
+                        name="username"
+                        placeholder="Enter your username"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input
+                        class="form-control"
+                        id="password"
+                        type="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        required
+                    >
+                </div>
+
+                <button class="btn btn-primary w-100" type="submit">Sign in</button>
+            </form>
+
+            <p class="auth-hint">
+                First-time setup? Run <code>seed_admin.php</code> once to create the initial administrator account.
+            </p>
+        </div>
     </div>
 </body>
 </html>
-
