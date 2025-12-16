@@ -8,63 +8,60 @@ foreach ($tables as $tbl) {
 }
 ?>
 <main>
-    <h3>Dashboard</h3>
-    <div class="row g-3 dashboard-cards">
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card metric-card border-0 shadow-sm h-100">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-muted mb-1">Products</p>
-                        <h4 class="mb-0 fw-bold"><?php echo number_format($counts['products']); ?></h4>
-                    </div>
-                    <span class="metric-indicator bg-primary-subtle text-primary">P</span>
-                </div>
+    <div class="page-header">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Overview of your inventory system</p>
+    </div>
+
+    <div class="dashboard-cards">
+        <div class="metric-card">
+            <div>
+                <p class="text-muted mb-1" style="font-size: var(--font-size-sm); font-weight: 500;">Products</p>
+                <h4 class="mb-0 fw-bold" style="font-size: var(--font-size-2xl);"><?php echo number_format($counts['products']); ?></h4>
             </div>
+            <span class="metric-indicator bg-primary-subtle text-primary">
+                <i class="bi bi-box-seam"></i>
+            </span>
         </div>
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card metric-card border-0 shadow-sm h-100">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-muted mb-1">Categories</p>
-                        <h4 class="mb-0 fw-bold"><?php echo number_format($counts['categories']); ?></h4>
-                    </div>
-                    <span class="metric-indicator bg-secondary-subtle text-secondary">C</span>
-                </div>
+
+        <div class="metric-card">
+            <div>
+                <p class="text-muted mb-1" style="font-size: var(--font-size-sm); font-weight: 500;">Categories</p>
+                <h4 class="mb-0 fw-bold" style="font-size: var(--font-size-2xl);"><?php echo number_format($counts['categories']); ?></h4>
             </div>
+            <span class="metric-indicator bg-secondary-subtle text-secondary">
+                <i class="bi bi-tags"></i>
+            </span>
         </div>
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card metric-card border-0 shadow-sm h-100">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-muted mb-1">Suppliers</p>
-                        <h4 class="mb-0 fw-bold"><?php echo number_format($counts['suppliers']); ?></h4>
-                    </div>
-                    <span class="metric-indicator bg-info-subtle text-info">S</span>
-                </div>
+
+        <div class="metric-card">
+            <div>
+                <p class="text-muted mb-1" style="font-size: var(--font-size-sm); font-weight: 500;">Suppliers</p>
+                <h4 class="mb-0 fw-bold" style="font-size: var(--font-size-2xl);"><?php echo number_format($counts['suppliers']); ?></h4>
             </div>
+            <span class="metric-indicator bg-info-subtle text-info">
+                <i class="bi bi-truck"></i>
+            </span>
         </div>
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card metric-card border-0 shadow-sm h-100">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-muted mb-1">Customers</p>
-                        <h4 class="mb-0 fw-bold"><?php echo number_format($counts['customers']); ?></h4>
-                    </div>
-                    <span class="metric-indicator bg-success-subtle text-success">C</span>
-                </div>
+
+        <div class="metric-card">
+            <div>
+                <p class="text-muted mb-1" style="font-size: var(--font-size-sm); font-weight: 500;">Customers</p>
+                <h4 class="mb-0 fw-bold" style="font-size: var(--font-size-2xl);"><?php echo number_format($counts['customers']); ?></h4>
             </div>
+            <span class="metric-indicator bg-success-subtle text-success">
+                <i class="bi bi-people"></i>
+            </span>
         </div>
-        <div class="col-12 col-md-6 col-lg-4">
-            <div class="card metric-card border-0 shadow-sm h-100">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-muted mb-1">Sales</p>
-                        <h4 class="mb-0 fw-bold"><?php echo number_format($counts['sales']); ?></h4>
-                    </div>
-                    <span class="metric-indicator bg-warning-subtle text-warning">S</span>
-                </div>
+
+        <div class="metric-card">
+            <div>
+                <p class="text-muted mb-1" style="font-size: var(--font-size-sm); font-weight: 500;">Sales</p>
+                <h4 class="mb-0 fw-bold" style="font-size: var(--font-size-2xl);"><?php echo number_format($counts['sales']); ?></h4>
             </div>
+            <span class="metric-indicator bg-warning-subtle text-warning">
+                <i class="bi bi-cart-check"></i>
+            </span>
         </div>
     </div>
 </main>
-

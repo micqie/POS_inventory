@@ -37,12 +37,18 @@ $transactions = $conn->query('
 ')->fetch_all(MYSQLI_ASSOC);
 ?>
 <main>
-    <h3>Inventory Transactions</h3>
+    <div class="page-header">
+        <h1 class="page-title">Inventory Transactions</h1>
+        <p class="page-subtitle">Track stock movements in and out</p>
+    </div>
 
-    <div class="card mb-4 shadow-sm">
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-plus-circle"></i> Record New Transaction
+        </div>
         <div class="card-body">
-            <form method="post" class="row g-3">
-                <div class="col-12 col-md-4">
+            <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-lg);">
+                <div class="form-group">
                     <label class="form-label">Product</label>
                     <select class="form-select" name="product_id" required>
                         <option value="">Select product</option>
@@ -51,8 +57,8 @@ $transactions = $conn->query('
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-12 col-md-4">
-                    <label class="form-label">Supplier (for IN)</label>
+                <div class="form-group">
+                    <label class="form-label">Supplier (for IN only)</label>
                     <select class="form-select" name="supplier_id">
                         <option value="">None</option>
                         <?php foreach ($suppliers as $s): ?>
@@ -60,44 +66,70 @@ $transactions = $conn->query('
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-12 col-md-2">
+                <div class="form-group">
                     <label class="form-label">Quantity</label>
-                    <input class="form-control" type="number" name="quantity" min="1" required>
+                    <input class="form-control" type="number" name="quantity" min="1" required placeholder="Enter quantity">
                 </div>
-                <div class="col-12 col-md-2">
-                    <label class="form-label">Type</label>
+                <div class="form-group">
+                    <label class="form-label">Transaction Type</label>
                     <select class="form-select" name="transaction_type">
-                        <option value="in">In</option>
-                        <option value="out">Out</option>
+                        <option value="in">Stock In</option>
+                        <option value="out">Stock Out</option>
                     </select>
                 </div>
-                <div class="col-12">
-                    <button class="btn btn-primary" type="submit">Record</button>
+                <div class="form-group" style="display: flex; align-items: flex-end;">
+                    <button class="btn btn-primary w-100" type="submit">
+                        <i class="bi bi-check-circle"></i> Record Transaction
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr><th>ID</th><th>Product</th><th>Supplier</th><th>Qty</th><th>Type</th><th>Date</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($transactions as $t): ?>
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-list-ul"></i> Recent Transactions (Last 50)
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table table-hover align-middle">
+                    <thead>
                         <tr>
-                            <td><?php echo $t['transaction_id']; ?></td>
-                            <td><?php echo sanitize($t['product_name']); ?></td>
-                            <td><?php echo sanitize($t['supplier_name']); ?></td>
-                            <td><?php echo $t['quantity']; ?></td>
-                            <td><?php echo strtoupper($t['transaction_type']); ?></td>
-                            <td><?php echo $t['transaction_date']; ?></td>
+                            <th>ID</th>
+                            <th>Product</th>
+                            <th>Supplier</th>
+                            <th>Quantity</th>
+                            <th>Type</th>
+                            <th>Date</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($transactions)): ?>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted" style="padding: var(--spacing-2xl);">
+                                    <i class="bi bi-inbox" style="font-size: var(--font-size-3xl); display: block; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
+                                    No transactions found. Record your first transaction above.
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($transactions as $t): ?>
+                                <tr>
+                                    <td><?php echo $t['transaction_id']; ?></td>
+                                    <td><strong><?php echo sanitize($t['product_name']); ?></strong></td>
+                                    <td><?php echo sanitize($t['supplier_name'] ?: '—'); ?></td>
+                                    <td><strong><?php echo $t['quantity']; ?></strong></td>
+                                    <td>
+                                        <span style="padding: 4px 10px; border-radius: var(--radius-sm); font-weight: 600; font-size: var(--font-size-xs); text-transform: uppercase; background: <?php echo $t['transaction_type'] === 'in' ? 'var(--success-light)' : 'var(--danger-light)'; ?>; color: <?php echo $t['transaction_type'] === 'in' ? '#065f46' : '#991b1b'; ?>;">
+                                            <?php echo strtoupper($t['transaction_type']); ?>
+                                        </span>
+                                    </td>
+                                    <td><?php echo date('M d, Y H:i', strtotime($t['transaction_date'])); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </main>
-

@@ -28,10 +28,10 @@ if ($page === 'seed_admin') {
 
 include __DIR__ . '/includes/header.php';
 ?>
-<div class="container-fluid">
-    <div class="row">
-        <?php include __DIR__ . '/includes/nav.php'; ?>
-        <div class="col-12 col-md-9 col-lg-10 py-3 px-4">
+<div class="app-content-wrapper">
+    <?php include __DIR__ . '/includes/nav.php'; ?>
+    <div style="flex: 1; display: flex; flex-direction: column;">
+        <div style="flex: 1;">
             <?php
             if ($msg = flash('success')) {
                 echo '<div class="alert alert-success" role="alert">' . sanitize($msg) . '</div>';
@@ -55,7 +55,7 @@ include __DIR__ . '/includes/header.php';
             if (in_array($page, $allowedModules, true)) {
                 include __DIR__ . '/modules/' . $page . '.php';
             } else {
-                echo '<main><h3>Page not found</h3></main>';
+                echo '<main><div class="page-header"><h1 class="page-title">Page not found</h1></div></main>';
             }
             ?>
         </div>
@@ -63,4 +63,3 @@ include __DIR__ . '/includes/header.php';
 </div>
 <?php
 include __DIR__ . '/includes/footer.php';
-

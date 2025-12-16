@@ -38,22 +38,27 @@ $productLabels = array_map(fn($r) => $r['product_name'], $topProducts);
 $productQty = array_map(fn($r) => (int)$r['qty'], $topProducts);
 ?>
 <main>
-    <h3>Reports</h3>
-    <div class="row g-4">
-        <div class="col-12 col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Sales (Last 7 Days)</h5>
-                    <canvas id="salesChart" height="200"></canvas>
-                </div>
+    <div class="page-header">
+        <h1 class="page-title">Reports & Analytics</h1>
+        <p class="page-subtitle">View sales trends and product performance</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: var(--spacing-xl);">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-graph-up"></i> Sales (Last 7 Days)
+            </div>
+            <div class="card-body">
+                <canvas id="salesChart" style="max-height: 300px;"></canvas>
             </div>
         </div>
-        <div class="col-12 col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Top Products (Qty Sold)</h5>
-                    <canvas id="productsChart" height="200"></canvas>
-                </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-bar-chart"></i> Top Products (Quantity Sold)
+            </div>
+            <div class="card-body">
+                <canvas id="productsChart" style="max-height: 300px;"></canvas>
             </div>
         </div>
     </div>
@@ -110,4 +115,3 @@ $productQty = array_map(fn($r) => (int)$r['qty'], $topProducts);
         }
     });
 </script>
-

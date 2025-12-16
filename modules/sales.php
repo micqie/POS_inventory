@@ -108,100 +108,148 @@ $recentSales = $conn->query('
 ')->fetch_all(MYSQLI_ASSOC);
 ?>
 <main>
-    <h3>Sales</h3>
-    <div class="row g-3">
-        <div class="col-12 col-lg-5">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Add to Cart</h5>
-                    <form method="post" class="row g-3">
-                        <input type="hidden" name="add_to_cart" value="1">
-                        <div class="col-12">
-                            <label class="form-label">Product</label>
-                            <select class="form-select" name="product_id" required>
-                                <option value="">Select product</option>
-                                <?php foreach ($products as $p): ?>
-                                    <option value="<?php echo $p['product_id']; ?>">
-                                        <?php echo sanitize($p['product_name']); ?> (Stock: <?php echo $p['stock']; ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label">Quantity</label>
-                            <input class="form-control" type="number" name="quantity" min="1" required>
-                        </div>
-                        <div class="col-12">
-                            <button class="btn btn-primary" type="submit">Add</button>
-                        </div>
-                    </form>
-                </div>
+    <div class="page-header">
+        <h1 class="page-title">Sales</h1>
+        <p class="page-subtitle">Process sales and manage transactions</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: var(--spacing-lg); margin-bottom: var(--spacing-xl);">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-cart-plus"></i> Add to Cart
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <input type="hidden" name="add_to_cart" value="1">
+                    <div class="form-group">
+                        <label class="form-label">Product</label>
+                        <select class="form-select" name="product_id" required>
+                            <option value="">Select product</option>
+                            <?php foreach ($products as $p): ?>
+                                <option value="<?php echo $p['product_id']; ?>">
+                                    <?php echo sanitize($p['product_name']); ?> (Stock: <?php echo $p['stock']; ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantity</label>
+                        <input class="form-control" type="number" name="quantity" min="1" required placeholder="Enter quantity">
+                    </div>
+                    <button class="btn btn-primary w-100" type="submit">
+                        <i class="bi bi-plus-circle"></i> Add to Cart
+                    </button>
+                </form>
             </div>
         </div>
-        <div class="col-12 col-lg-7">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Cart</h5>
-                    <div class="table-responsive">
+
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-cart-check"></i> Shopping Cart
+            </div>
+            <div class="card-body">
+                <?php $cartTotal = 0; foreach ($_SESSION['cart'] as $item): $line = $item['price'] * $item['quantity']; $cartTotal += $line; endforeach; ?>
+
+                <?php if (empty($_SESSION['cart'])): ?>
+                    <div class="text-center text-muted" style="padding: var(--spacing-xl);">
+                        <i class="bi bi-cart-x" style="font-size: var(--font-size-3xl); display: block; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
+                        <p>Your cart is empty. Add products to get started.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="table-container" style="margin-bottom: var(--spacing-lg);">
                         <table class="table table-hover align-middle">
-                            <thead class="table-light"><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th><th class="text-end"></th></tr></thead>
-                            <tbody>
-                            <?php $cartTotal = 0; foreach ($_SESSION['cart'] as $item): $line = $item['price'] * $item['quantity']; $cartTotal += $line; ?>
+                            <thead>
                                 <tr>
-                                    <td><?php echo sanitize($item['product_name']); ?></td>
-                                    <td><?php echo $item['quantity']; ?></td>
-                                    <td><?php echo number_format($item['price'], 2); ?></td>
-                                    <td><?php echo number_format($line, 2); ?></td>
-                                    <td class="text-end"><a class="btn btn-sm btn-outline-danger" href="index.php?page=sales&remove=<?php echo $item['product_id']; ?>">Remove</a></td>
+                                    <th>Item</th>
+                                    <th>Qty</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                    <th class="text-end">Action</th>
                                 </tr>
-                            <?php endforeach; ?>
-                            <?php if (empty($_SESSION['cart'])): ?>
-                                <tr><td colspan="5" class="text-center text-muted">No items.</td></tr>
-                            <?php endif; ?>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($_SESSION['cart'] as $item): $line = $item['price'] * $item['quantity']; ?>
+                                    <tr>
+                                        <td><strong><?php echo sanitize($item['product_name']); ?></strong></td>
+                                        <td><?php echo $item['quantity']; ?></td>
+                                        <td>$<?php echo number_format($item['price'], 2); ?></td>
+                                        <td><strong>$<?php echo number_format($line, 2); ?></strong></td>
+                                        <td class="text-end">
+                                            <a class="btn btn-sm btn-outline-danger" href="index.php?page=sales&remove=<?php echo $item['product_id']; ?>">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
-                    <p class="fw-bold">Total: <?php echo number_format($cartTotal, 2); ?></p>
-                    <form method="post" class="row g-3">
+
+                    <div style="padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: var(--spacing-lg);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: var(--font-size-lg); font-weight: 600;">Total Amount:</span>
+                            <span style="font-size: var(--font-size-2xl); font-weight: 700; color: var(--primary-600);">$<?php echo number_format($cartTotal, 2); ?></span>
+                        </div>
+                    </div>
+
+                    <form method="post">
                         <input type="hidden" name="checkout" value="1">
-                        <div class="col-12 col-md-6">
+                        <div class="form-group">
                             <label class="form-label">Customer (optional)</label>
                             <select class="form-select" name="customer_id">
-                                <option value="">Walk-in</option>
+                                <option value="">Walk-in Customer</option>
                                 <?php foreach ($customers as $c): ?>
                                     <option value="<?php echo $c['customer_id']; ?>"><?php echo sanitize($c['customer_name']); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="col-12">
-                            <button class="btn btn-success" type="submit">Checkout</button>
-                        </div>
+                        <button class="btn btn-success w-100" type="submit">
+                            <i class="bi bi-check-circle"></i> Complete Checkout
+                        </button>
                     </form>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 
-    <div class="card shadow-sm mt-4">
-        <div class="card-body">
-            <h5 class="card-title mb-3">Recent Sales</h5>
-            <div class="table-responsive">
-                <table class="table table-striped align-middle mb-0">
-                    <thead class="table-light"><tr><th>ID</th><th>Total</th><th>Customer</th><th>Cashier</th><th>Date</th></tr></thead>
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-receipt"></i> Recent Sales
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Total Amount</th>
+                            <th>Customer</th>
+                            <th>Cashier</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
                     <tbody>
-                        <?php foreach ($recentSales as $s): ?>
+                        <?php if (empty($recentSales)): ?>
                             <tr>
-                                <td><?php echo $s['sale_id']; ?></td>
-                                <td><?php echo number_format($s['total_amount'], 2); ?></td>
-                                <td><?php echo sanitize($s['customer_name'] ?? 'Walk-in'); ?></td>
-                                <td><?php echo sanitize($s['username']); ?></td>
-                                <td><?php echo $s['sale_date']; ?></td>
+                                <td colspan="5" class="text-center text-muted" style="padding: var(--spacing-2xl);">
+                                    <i class="bi bi-inbox" style="font-size: var(--font-size-3xl); display: block; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
+                                    No sales recorded yet.
+                                </td>
                             </tr>
-                        <?php endforeach; ?>
+                        <?php else: ?>
+                            <?php foreach ($recentSales as $s): ?>
+                                <tr>
+                                    <td><?php echo $s['sale_id']; ?></td>
+                                    <td><strong style="color: var(--success);">$<?php echo number_format($s['total_amount'], 2); ?></strong></td>
+                                    <td><?php echo sanitize($s['customer_name'] ?? 'Walk-in'); ?></td>
+                                    <td><?php echo sanitize($s['username']); ?></td>
+                                    <td><?php echo date('M d, Y H:i', strtotime($s['sale_date'])); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </main>
-

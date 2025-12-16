@@ -1,5 +1,5 @@
 <?php if (is_logged_in()): ?>
-<aside class="col-12 col-md-3 col-lg-2 px-0 sidebar bg-white border-end min-vh-100">
+<aside class="sidebar">
     <?php
     $pages = [
         'dashboard' => ['label' => 'Dashboard', 'icon' => 'bi-speedometer2'],
@@ -14,15 +14,16 @@
     ];
     $current = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
     ?>
-    <div class="list-group list-group-flush sidebar-list">
+    <ul class="sidebar-list">
         <?php foreach ($pages as $key => $meta): ?>
-            <a href="index.php?page=<?php echo $key; ?>"
-               class="list-group-item list-group-item-action d-flex align-items-center gap-2 <?php echo $current === $key ? 'active' : ''; ?>">
-                <i class="bi <?php echo $meta['icon']; ?>"></i>
-                <span><?php echo $meta['label']; ?></span>
-            </a>
+            <li>
+                <a href="index.php?page=<?php echo $key; ?>"
+                   class="list-group-item <?php echo $current === $key ? 'active' : ''; ?>">
+                    <i class="bi <?php echo $meta['icon']; ?>"></i>
+                    <span><?php echo $meta['label']; ?></span>
+                </a>
+            </li>
         <?php endforeach; ?>
-    </div>
+    </ul>
 </aside>
 <?php endif; ?>
-

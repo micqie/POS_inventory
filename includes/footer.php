@@ -1,6 +1,6 @@
-<footer class="text-center py-3 text-muted">
-    <small>POS Inventory &copy; <?php echo date('Y'); ?></small>
+<footer>
+    <small>&copy; <?php echo date('Y'); ?> POS Inventory System. All rights reserved.</small>
 </footer>
+</div>
 </body>
 </html>
-

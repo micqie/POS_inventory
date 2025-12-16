@@ -55,17 +55,23 @@ $products = $conn->query('
 ')->fetch_all(MYSQLI_ASSOC);
 ?>
 <main>
-    <h3>Products</h3>
+    <div class="page-header">
+        <h1 class="page-title">Products</h1>
+        <p class="page-subtitle">Manage your product catalog</p>
+    </div>
 
-    <div class="card mb-4 shadow-sm">
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-plus-circle"></i> <?php echo $editItem ? 'Edit Product' : 'Add New Product'; ?>
+        </div>
         <div class="card-body">
-            <form method="post" class="row g-3">
+            <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg);">
                 <input type="hidden" name="product_id" value="<?php echo $editItem['product_id'] ?? ''; ?>">
-                <div class="col-12 col-md-6">
-                    <label class="form-label">Name</label>
-                    <input class="form-control" type="text" name="product_name" required value="<?php echo sanitize($editItem['product_name'] ?? ''); ?>">
+                <div class="form-group">
+                    <label class="form-label">Product Name</label>
+                    <input class="form-control" type="text" name="product_name" required value="<?php echo sanitize($editItem['product_name'] ?? ''); ?>" placeholder="Enter product name">
                 </div>
-                <div class="col-12 col-md-6">
+                <div class="form-group">
                     <label class="form-label">Category</label>
                     <select class="form-select" name="category_id" required>
                         <option value="">Select category</option>
@@ -76,16 +82,19 @@ $products = $conn->query('
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="col-12 col-md-6">
+                <div class="form-group">
                     <label class="form-label">Price</label>
-                    <input class="form-control" type="number" step="0.01" name="price" required value="<?php echo $editItem['price'] ?? '0'; ?>">
+                    <input class="form-control" type="number" step="0.01" name="price" required value="<?php echo $editItem['price'] ?? '0'; ?>" placeholder="0.00">
                 </div>
-                <div class="col-12 col-md-6">
-                    <label class="form-label">Stock</label>
-                    <input class="form-control" type="number" name="stock" required value="<?php echo $editItem['stock'] ?? '0'; ?>">
+                <div class="form-group">
+                    <label class="form-label">Stock Quantity</label>
+                    <input class="form-control" type="number" name="stock" required value="<?php echo $editItem['stock'] ?? '0'; ?>" placeholder="0">
                 </div>
-                <div class="col-12 d-flex gap-2">
-                    <button class="btn btn-primary" type="submit"><?php echo $editItem ? 'Update' : 'Add'; ?></button>
+                <div class="form-group" style="display: flex; gap: var(--spacing-md); align-items: flex-end;">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-<?php echo $editItem ? 'check-circle' : 'plus-circle'; ?>"></i>
+                        <?php echo $editItem ? 'Update Product' : 'Add Product'; ?>
+                    </button>
                     <?php if ($editItem): ?>
                         <a class="btn btn-secondary" href="index.php?page=products">Cancel</a>
                     <?php endif; ?>
@@ -94,30 +103,59 @@ $products = $conn->query('
         </div>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Created</th><th class="text-end">Actions</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($products as $p): ?>
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-list-ul"></i> All Products
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table table-hover align-middle">
+                    <thead>
                         <tr>
-                            <td><?php echo $p['product_id']; ?></td>
-                            <td><?php echo sanitize($p['product_name']); ?></td>
-                            <td><?php echo sanitize($p['category_name']); ?></td>
-                            <td><?php echo number_format($p['price'], 2); ?></td>
-                            <td><?php echo $p['stock']; ?></td>
-                            <td><?php echo $p['created_at']; ?></td>
-                            <td class="text-end">
-                                <a class="btn btn-sm btn-outline-secondary" href="index.php?page=products&edit=<?php echo $p['product_id']; ?>">Edit</a>
-                                <a class="btn btn-sm btn-outline-danger" href="index.php?page=products&delete=<?php echo $p['product_id']; ?>" onclick="return confirm('Delete product?');">Delete</a>
-                            </td>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Created</th>
+                            <th class="text-end">Actions</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($products)): ?>
+                            <tr>
+                                <td colspan="7" class="text-center text-muted" style="padding: var(--spacing-2xl);">
+                                    <i class="bi bi-inbox" style="font-size: var(--font-size-3xl); display: block; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
+                                    No products found. Add your first product above.
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($products as $p): ?>
+                                <tr>
+                                    <td><?php echo $p['product_id']; ?></td>
+                                    <td><strong><?php echo sanitize($p['product_name']); ?></strong></td>
+                                    <td><?php echo sanitize($p['category_name']); ?></td>
+                                    <td><strong>$<?php echo number_format($p['price'], 2); ?></strong></td>
+                                    <td>
+                                        <span style="padding: 4px 8px; border-radius: var(--radius-sm); background: <?php echo $p['stock'] > 10 ? 'var(--success-light)' : 'var(--warning-light)'; ?>; color: <?php echo $p['stock'] > 10 ? '#065f46' : '#92400e'; ?>; font-weight: 600;">
+                                            <?php echo $p['stock']; ?>
+                                        </span>
+                                    </td>
+                                    <td><?php echo date('M d, Y', strtotime($p['created_at'])); ?></td>
+                                    <td class="text-end">
+                                        <a class="btn btn-sm btn-outline-secondary" href="index.php?page=products&edit=<?php echo $p['product_id']; ?>">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                        <a class="btn btn-sm btn-outline-danger" href="index.php?page=products&delete=<?php echo $p['product_id']; ?>" onclick="return confirm('Are you sure you want to delete this product?');">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </main>
-

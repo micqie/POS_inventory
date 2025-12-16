@@ -44,18 +44,27 @@ if (isset($_GET['edit'])) {
 $categories = $conn->query('SELECT * FROM categories ORDER BY category_id DESC')->fetch_all(MYSQLI_ASSOC);
 ?>
 <main>
-    <h3>Categories</h3>
+    <div class="page-header">
+        <h1 class="page-title">Categories</h1>
+        <p class="page-subtitle">Organize products into categories</p>
+    </div>
 
-    <div class="card mb-4 shadow-sm">
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-plus-circle"></i> <?php echo $editItem ? 'Edit Category' : 'Add New Category'; ?>
+        </div>
         <div class="card-body">
-            <form method="post" class="row g-3">
-        <input type="hidden" name="category_id" value="<?php echo $editItem['category_id'] ?? ''; ?>">
-                <div class="col-12 col-md-8 col-lg-6">
-                    <label class="form-label">Name</label>
-                    <input class="form-control" type="text" name="category_name" required value="<?php echo sanitize($editItem['category_name'] ?? ''); ?>">
+            <form method="post" style="display: flex; gap: var(--spacing-md); align-items: flex-end; flex-wrap: wrap;">
+                <input type="hidden" name="category_id" value="<?php echo $editItem['category_id'] ?? ''; ?>">
+                <div class="form-group" style="flex: 1; min-width: 250px; margin-bottom: 0;">
+                    <label class="form-label">Category Name</label>
+                    <input class="form-control" type="text" name="category_name" required value="<?php echo sanitize($editItem['category_name'] ?? ''); ?>" placeholder="Enter category name">
                 </div>
-                <div class="col-12 d-flex gap-2">
-                    <button class="btn btn-primary" type="submit"><?php echo $editItem ? 'Update' : 'Add'; ?></button>
+                <div style="display: flex; gap: var(--spacing-md);">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-<?php echo $editItem ? 'check-circle' : 'plus-circle'; ?>"></i>
+                        <?php echo $editItem ? 'Update' : 'Add Category'; ?>
+                    </button>
                     <?php if ($editItem): ?>
                         <a class="btn btn-secondary" href="index.php?page=categories">Cancel</a>
                     <?php endif; ?>
@@ -64,27 +73,49 @@ $categories = $conn->query('SELECT * FROM categories ORDER BY category_id DESC')
         </div>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr><th>ID</th><th>Name</th><th>Created</th><th class="text-end">Actions</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($categories as $cat): ?>
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-list-ul"></i> All Categories
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table table-hover align-middle">
+                    <thead>
                         <tr>
-                            <td><?php echo $cat['category_id']; ?></td>
-                            <td><?php echo sanitize($cat['category_name']); ?></td>
-                            <td><?php echo $cat['created_at']; ?></td>
-                            <td class="text-end">
-                                <a class="btn btn-sm btn-outline-secondary" href="index.php?page=categories&edit=<?php echo $cat['category_id']; ?>">Edit</a>
-                                <a class="btn btn-sm btn-outline-danger" href="index.php?page=categories&delete=<?php echo $cat['category_id']; ?>" onclick="return confirm('Delete category?');">Delete</a>
-                            </td>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Created</th>
+                            <th class="text-end">Actions</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($categories)): ?>
+                            <tr>
+                                <td colspan="4" class="text-center text-muted" style="padding: var(--spacing-2xl);">
+                                    <i class="bi bi-inbox" style="font-size: var(--font-size-3xl); display: block; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
+                                    No categories found. Add your first category above.
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($categories as $cat): ?>
+                                <tr>
+                                    <td><?php echo $cat['category_id']; ?></td>
+                                    <td><strong><?php echo sanitize($cat['category_name']); ?></strong></td>
+                                    <td><?php echo date('M d, Y', strtotime($cat['created_at'])); ?></td>
+                                    <td class="text-end">
+                                        <a class="btn btn-sm btn-outline-secondary" href="index.php?page=categories&edit=<?php echo $cat['category_id']; ?>">
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </a>
+                                        <a class="btn btn-sm btn-outline-danger" href="index.php?page=categories&delete=<?php echo $cat['category_id']; ?>" onclick="return confirm('Are you sure you want to delete this category?');">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </main>
-
