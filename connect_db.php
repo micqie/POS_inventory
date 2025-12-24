@@ -1,8 +1,4 @@
 <?php
-// Enable error visibility for easier debugging in dev.
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 $host = "localhost";
 $db_name = "pos_db";

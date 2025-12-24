@@ -26,10 +26,24 @@ if (is_post()) {
 
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
-    $stmt = $conn->prepare('DELETE FROM suppliers WHERE supplier_id=?');
+
+    // Check if supplier has related inventory transactions
+    $stmt = $conn->prepare('SELECT COUNT(*) FROM inventory_transactions WHERE supplier_id=?');
     $stmt->bind_param('i', $id);
     $stmt->execute();
-    flash('success', 'Supplier deleted.');
+    $stmt->bind_result($count);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($count > 0) {
+        flash('error', 'Cannot delete supplier because there are inventory transactions linked to them.');
+    } else {
+        $stmt = $conn->prepare('DELETE FROM suppliers WHERE supplier_id=?');
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        flash('success', 'Supplier deleted.');
+    }
+
     header('Location: index.php?page=suppliers');
     exit;
 }
