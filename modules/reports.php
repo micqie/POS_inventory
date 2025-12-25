@@ -94,13 +94,10 @@ $totalSales = array_sum($chartValues);
                     <i class="bi bi-funnel"></i> Filter Reports
                 </div>
                 <div>
-                    <form method="GET" action="export_sales.php" id="exportForm" class="d-inline-block">
-                        <input type="hidden" name="start_date" value="<?php echo htmlspecialchars($startDate); ?>">
-                        <input type="hidden" name="end_date" value="<?php echo htmlspecialchars($endDate); ?>">
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-file-earmark-excel"></i> Export to Excel
-                        </button>
-                    </form>
+                    <!-- Using JavaScript function for export -->
+                    <button type="button" class="btn btn-success" onclick="exportToExcel()">
+                        <i class="bi bi-file-earmark-excel"></i> Export to Excel
+                    </button>
                 </div>
             </div>
             <div class="card-body">
@@ -287,20 +284,17 @@ $totalSales = array_sum($chartValues);
             </div>
         </div>
 
-        <!-- Main Data Table (Like your survey example) -->
+        <!-- Main Data Table -->
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
                     <i class="bi bi-table"></i> Sales Report Summary
                 </div>
                 <div>
-                    <form method="GET" action="export_sales.php" class="d-inline-block">
-                        <input type="hidden" name="start_date" value="<?php echo htmlspecialchars($startDate); ?>">
-                        <input type="hidden" name="end_date" value="<?php echo htmlspecialchars($endDate); ?>">
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-file-earmark-excel"></i> Export to Excel
-                        </button>
-                    </form>
+                    <!-- Using JavaScript function for export -->
+                    <button type="button" class="btn btn-success" onclick="exportToExcel()">
+                        <i class="bi bi-file-earmark-excel"></i> Export to Excel
+                    </button>
                 </div>
             </div>
             <div class="card-body" style="padding: 0;">
@@ -365,6 +359,12 @@ $totalSales = array_sum($chartValues);
                 </div>
             </div>
         </div>
+
+        <!-- Hidden form for export (alternative method) -->
+        <form id="excelExportForm" method="GET" action="export_sales_report.php" target="_blank" style="display: none;">
+            <input type="hidden" name="start_date" id="export_start_date">
+            <input type="hidden" name="end_date" id="export_end_date">
+        </form>
     </div>
 </main>
 
@@ -522,24 +522,12 @@ function updateExportForm() {
     const startDate = document.getElementById('start_date').value;
     const endDate = document.getElementById('end_date').value;
 
-    // Update all export forms on the page
-    document.querySelectorAll('#exportForm input[name="start_date"]').forEach(input => {
-        input.value = startDate;
-    });
-    document.querySelectorAll('#exportForm input[name="end_date"]').forEach(input => {
-        input.value = endDate;
-    });
-
-    // Also update other export forms (if you have multiple)
-    document.querySelectorAll('form[action="export_sales_report.php"] input[name="start_date"]').forEach(input => {
-        input.value = startDate;
-    });
-    document.querySelectorAll('form[action="export_sales_report.php"] input[name="end_date"]').forEach(input => {
-        input.value = endDate;
-    });
+    // Update hidden export form fields
+    document.getElementById('export_start_date').value = startDate;
+    document.getElementById('export_end_date').value = endDate;
 }
 
-// Alternative export function using window.open
+// Main export function using window.open (preferred)
 function exportToExcel() {
     const startDate = document.getElementById('start_date').value;
     const endDate = document.getElementById('end_date').value;
@@ -549,6 +537,38 @@ function exportToExcel() {
         return;
     }
 
-    window.open(`export_sales_report.php?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`, '_blank');
+    // Get the session ID from cookie
+    function getSessionId() {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'PHPSESSID') {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    const sessionId = getSessionId();
+    if (sessionId) {
+        window.open(`export_sales_report.php?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}&session_id=${sessionId}`, '_blank');
+    } else {
+        alert('Session expired. Please log in again.');
+    }
+}
+// Alternative export function using form submission
+function exportToExcelForm() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+
+    if (!startDate || !endDate) {
+        alert('Please select both start and end dates.');
+        return;
+    }
+
+    // Set values and submit hidden form
+    document.getElementById('export_start_date').value = startDate;
+    document.getElementById('export_end_date').value = endDate;
+    document.getElementById('excelExportForm').submit();
 }
 </script>
