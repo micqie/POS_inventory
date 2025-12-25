@@ -22,7 +22,14 @@ if (is_post()) {
         $result = $stmt->get_result();
         if ($row = $result->fetch_assoc()) {
             if (password_verify($password, $row['password'])) {
+                // Set session variables in the new format expected by config.php
+                $_SESSION['user_id'] = $row['user_id'];
+                $_SESSION['username'] = $row['username'];
+                $_SESSION['user_role'] = $row['role'];
+
+                // Also keep the old format for backward compatibility if needed
                 $_SESSION['user'] = $row;
+
                 header('Location: index.php');
                 exit;
             }

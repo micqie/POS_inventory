@@ -1,4 +1,42 @@
+
 <?php
+// index.php
+session_start();
+require_once __DIR__ . '/connect_db.php';
+require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/config.php';
+
+// Redirect to login when not authenticated (except login and seed).
+$publicPages = ['login', 'seed_admin'];
+$currentPage = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
+
+if (!is_logged_in() && !in_array($currentPage, $publicPages, true)) {
+    header('Location: index.php?page=login');
+    exit;
+}
+
+// Define role-based permissions
+$rolePermissions = [
+    'admin' => ['dashboard', 'categories', 'products', 'suppliers', 'customers',
+                'inventory', 'sales', 'reports', 'users'],
+    'cashier' => ['dashboard', 'products', 'customers', 'sales'],
+    'manager' => ['dashboard', 'categories', 'products', 'suppliers', 'customers',
+                  'inventory', 'sales', 'reports']
+];
+
+// Get current user role (default to cashier if not set)
+$userRole = $_SESSION['user_role'] ?? 'cashier';
+
+// Check if user has permission to access the requested page
+if (!in_array($currentPage, $publicPages, true)) {
+    if (!isset($rolePermissions[$userRole]) || !in_array($currentPage, $rolePermissions[$userRole], true)) {
+        // Redirect to dashboard if unauthorized
+        $_SESSION['flash_error'] = 'You do not have permission to access that page.';
+        header('Location: index.php?page=dashboard');
+        exit;
+    }
+}
+
 require_once __DIR__ . '/config.php';
 
 // Handle logout early.
@@ -40,17 +78,7 @@ include __DIR__ . '/includes/header.php';
                 echo '<div class="alert alert-danger" role="alert">' . sanitize($msg) . '</div>';
             }
 
-            $allowedModules = [
-                'dashboard',
-                'categories',
-                'products',
-                'suppliers',
-                'customers',
-                'inventory',
-                'sales',
-                'reports',
-                'users',
-            ];
+            $allowedModules = $rolePermissions[$userRole] ?? [];
 
             if (in_array($page, $allowedModules, true)) {
                 include __DIR__ . '/modules/' . $page . '.php';

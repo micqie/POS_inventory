@@ -29,20 +29,84 @@ function flash($key, $message = null)
 
 function is_logged_in()
 {
-    return !empty($_SESSION['user']);
+    // Check for new format (user_id) OR old format (user array)
+    return !empty($_SESSION['user_id']) || !empty($_SESSION['user']);
+}
+
+function get_current_role()
+{
+    // Try new format first
+    if (isset($_SESSION['user_role'])) {
+        return $_SESSION['user_role'];
+    }
+
+    // Try old format
+    if (isset($_SESSION['user']['role'])) {
+        return $_SESSION['user']['role'];
+    }
+
+    return null;
 }
 
 function current_user()
 {
-    return $_SESSION['user'] ?? null;
+    // Return data in consistent format
+    if (isset($_SESSION['user_id'])) {
+        return [
+            'id' => $_SESSION['user_id'],
+            'username' => $_SESSION['username'] ?? '',
+            'role' => $_SESSION['user_role'] ?? ''
+        ];
+    }
+
+    // Fallback to old format
+    if (isset($_SESSION['user'])) {
+        return $_SESSION['user'];
+    }
+
+    return null;
 }
 
 function require_role($role)
 {
-    if (!is_logged_in() || ($_SESSION['user']['role'] ?? '') !== $role) {
-        flash('error', 'You are not allowed to perform this action.');
-        header('Location: index.php');
+    if (!is_logged_in()) {
+        flash('error', 'Please login first.');
+        header('Location: index.php?page=login');
+        exit;
+    }
+
+    $currentRole = get_current_role();
+    if ($currentRole !== $role) {
+        flash('error', 'You do not have permission to perform this action.');
+        header('Location: index.php?page=dashboard');
         exit;
     }
 }
 
+function has_permission($page)
+{
+    $rolePermissions = [
+        'admin' => ['dashboard', 'categories', 'products', 'suppliers', 'customers',
+                    'inventory', 'sales', 'reports', 'users'],
+        'cashier' => ['dashboard', 'products', 'customers', 'sales'],
+        'manager' => ['dashboard', 'categories', 'products', 'suppliers', 'customers',
+                      'inventory', 'sales', 'reports']
+    ];
+
+    $userRole = get_current_role();
+
+    if (!$userRole || !isset($rolePermissions[$userRole])) {
+        return false;
+    }
+
+    return in_array($page, $rolePermissions[$userRole]);
+}
+
+function redirect_if_unauthorized($page)
+{
+    if (!has_permission($page)) {
+        flash('error', 'You do not have permission to access that page.');
+        header('Location: index.php?page=dashboard');
+        exit;
+    }
+}
