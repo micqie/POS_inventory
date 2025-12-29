@@ -65,13 +65,13 @@ $products = $conn->query('
             <i class="bi bi-plus-circle"></i> <?php echo $editItem ? 'Edit Product' : 'Add New Product'; ?>
         </div>
         <div class="card-body">
-            <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg);">
+            <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg); align-items: flex-end;">
                 <input type="hidden" name="product_id" value="<?php echo $editItem['product_id'] ?? ''; ?>">
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Product Name</label>
                     <input class="form-control" type="text" name="product_name" required value="<?php echo sanitize($editItem['product_name'] ?? ''); ?>" placeholder="Enter product name">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Category</label>
                     <select class="form-select" name="category_id" required>
                         <option value="">Select category</option>
@@ -82,15 +82,15 @@ $products = $conn->query('
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Price</label>
                     <input class="form-control" type="number" step="0.01" name="price" required value="<?php echo $editItem['price'] ?? '0'; ?>" placeholder="0.00">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Stock Quantity</label>
                     <input class="form-control" type="number" name="stock" required value="<?php echo $editItem['stock'] ?? '0'; ?>" placeholder="0">
                 </div>
-                <div class="form-group" style="display: flex; gap: var(--spacing-md); align-items: flex-end;">
+                <div class="form-group" style="display: flex; gap: var(--spacing-md); align-items: flex-end; margin-bottom: 0;">
                     <button class="btn btn-primary" type="submit">
                         <i class="bi bi-<?php echo $editItem ? 'check-circle' : 'plus-circle'; ?>"></i>
                         <?php echo $editItem ? 'Update Product' : 'Add Product'; ?>

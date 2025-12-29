@@ -47,8 +47,8 @@ $transactions = $conn->query('
             <i class="bi bi-plus-circle"></i> Record New Transaction
         </div>
         <div class="card-body">
-            <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-lg);">
-                <div class="form-group">
+            <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-lg); align-items: flex-end;">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Product</label>
                     <select class="form-select" name="product_id" required>
                         <option value="">Select product</option>
@@ -57,7 +57,7 @@ $transactions = $conn->query('
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Supplier (for IN only)</label>
                     <select class="form-select" name="supplier_id">
                         <option value="">None</option>
@@ -66,18 +66,18 @@ $transactions = $conn->query('
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Quantity</label>
                     <input class="form-control" type="number" name="quantity" min="1" required placeholder="Enter quantity">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Transaction Type</label>
                     <select class="form-select" name="transaction_type">
                         <option value="in">Stock In</option>
                         <option value="out">Stock Out</option>
                     </select>
                 </div>
-                <div class="form-group" style="display: flex; align-items: flex-end;">
+                <div class="form-group" style="display: flex; align-items: flex-end; margin-bottom: 0;">
                     <button class="btn btn-primary w-100" type="submit">
                         <i class="bi bi-check-circle"></i> Record Transaction
                     </button>

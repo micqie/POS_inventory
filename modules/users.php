@@ -69,24 +69,24 @@ $users = $conn->query('SELECT * FROM users ORDER BY user_id DESC')->fetch_all(MY
             <i class="bi bi-plus-circle"></i> <?php echo $editItem ? 'Edit User' : 'Add New User'; ?>
         </div>
         <div class="card-body">
-            <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg);">
+            <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg); align-items: flex-end;">
                 <input type="hidden" name="user_id" value="<?php echo $editItem['user_id'] ?? ''; ?>">
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Username</label>
                     <input class="form-control" type="text" name="username" required value="<?php echo sanitize($editItem['username'] ?? ''); ?>" placeholder="Enter username">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Role</label>
                     <select class="form-select" name="role">
                         <option value="admin" <?php echo (($editItem['role'] ?? '') === 'admin') ? 'selected' : ''; ?>>Administrator</option>
                         <option value="cashier" <?php echo (($editItem['role'] ?? '') === 'cashier') ? 'selected' : ''; ?>>Cashier</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Password <?php echo $editItem ? '<span style="font-weight: 400; color: var(--text-muted);">(leave blank to keep current)</span>' : ''; ?></label>
                     <input class="form-control" type="password" name="password" <?php echo $editItem ? '' : 'required'; ?> placeholder="Enter password">
                 </div>
-                <div class="form-group" style="display: flex; gap: var(--spacing-md); align-items: flex-end;">
+                <div class="form-group" style="display: flex; gap: var(--spacing-md); align-items: flex-end; margin-bottom: 0;">
                     <button class="btn btn-primary" type="submit">
                         <i class="bi bi-<?php echo $editItem ? 'check-circle' : 'plus-circle'; ?>"></i>
                         <?php echo $editItem ? 'Update User' : 'Add User'; ?>

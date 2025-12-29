@@ -66,35 +66,3 @@ if (is_logged_in()) {
         }
     }
 }
-
-// Include header for authenticated users
-include __DIR__ . '/includes/header.php';
-?>
-<div class="app-content-wrapper">
-    <?php include __DIR__ . '/includes/nav.php'; ?>
-    <div style="flex: 1; display: flex; flex-direction: column;">
-        <div style="flex: 1;">
-            <?php
-            // Display flash messages
-            if ($msg = flash('success')) {
-                echo '<div class="alert alert-success" role="alert">' . sanitize($msg) . '</div>';
-            }
-            if ($msg = flash('error')) {
-                echo '<div class="alert alert-danger" role="alert">' . sanitize($msg) . '</div>';
-            }
-
-            // Load the requested module if user has permission
-            $userRole = get_current_role() ?? 'cashier';
-            $allowedModules = $rolePermissions[$userRole] ?? $rolePermissions['cashier'];
-
-            if (in_array($currentPage, $allowedModules, true)) {
-                include __DIR__ . '/modules/' . $currentPage . '.php';
-            } else {
-                echo '<main><div class="page-header"><h1 class="page-title">Page not found</h1></div></main>';
-            }
-            ?>
-        </div>
-    </div>
-</div>
-<?php
-include __DIR__ . '/includes/footer.php';

@@ -68,25 +68,23 @@ include __DIR__ . '/includes/header.php';
 ?>
 <div class="app-content-wrapper">
     <?php include __DIR__ . '/includes/nav.php'; ?>
-    <div style="flex: 1; display: flex; flex-direction: column;">
-        <div style="flex: 1;">
-            <?php
-            if ($msg = flash('success')) {
-                echo '<div class="alert alert-success" role="alert">' . sanitize($msg) . '</div>';
-            }
-            if ($msg = flash('error')) {
-                echo '<div class="alert alert-danger" role="alert">' . sanitize($msg) . '</div>';
-            }
+    <div class="main-content-wrapper">
+        <?php
+        if ($msg = flash('success')) {
+            echo '<div class="alert alert-success" role="alert">' . sanitize($msg) . '</div>';
+        }
+        if ($msg = flash('error')) {
+            echo '<div class="alert alert-danger" role="alert">' . sanitize($msg) . '</div>';
+        }
 
-            $allowedModules = $rolePermissions[$userRole] ?? [];
+        $allowedModules = $rolePermissions[$userRole] ?? [];
 
-            if (in_array($page, $allowedModules, true)) {
-                include __DIR__ . '/modules/' . $page . '.php';
-            } else {
-                echo '<main><div class="page-header"><h1 class="page-title">Page not found</h1></div></main>';
-            }
-            ?>
-        </div>
+        if (in_array($page, $allowedModules, true)) {
+            include __DIR__ . '/modules/' . $page . '.php';
+        } else {
+            echo '<main><div class="page-header"><h1 class="page-title">Page not found</h1></div></main>';
+        }
+        ?>
     </div>
 </div>
 <?php

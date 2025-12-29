@@ -55,17 +55,17 @@ $customers = $conn->query('SELECT * FROM customers ORDER BY customer_id DESC')->
             <i class="bi bi-plus-circle"></i> <?php echo $editItem ? 'Edit Customer' : 'Add New Customer'; ?>
         </div>
         <div class="card-body">
-            <form method="post" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-lg);">
+            <form method="post" style="display: flex; gap: var(--spacing-md); align-items: flex-end; flex-wrap: wrap;">
                 <input type="hidden" name="customer_id" value="<?php echo $editItem['customer_id'] ?? ''; ?>">
-                <div class="form-group">
+                <div class="form-group" style="flex: 1; min-width: 250px; margin-bottom: 0;">
                     <label class="form-label">Customer Name</label>
                     <input class="form-control" type="text" name="customer_name" required value="<?php echo sanitize($editItem['customer_name'] ?? ''); ?>" placeholder="Enter customer name">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="flex: 1; min-width: 250px; margin-bottom: 0;">
                     <label class="form-label">Contact Number</label>
                     <input class="form-control" type="text" name="contact_number" value="<?php echo sanitize($editItem['contact_number'] ?? ''); ?>" placeholder="Phone or email">
                 </div>
-                <div class="form-group" style="display: flex; gap: var(--spacing-md); align-items: flex-end;">
+                <div style="display: flex; gap: var(--spacing-md);">
                     <button class="btn btn-primary" type="submit">
                         <i class="bi bi-<?php echo $editItem ? 'check-circle' : 'plus-circle'; ?>"></i>
                         <?php echo $editItem ? 'Update Customer' : 'Add Customer'; ?>
