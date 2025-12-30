@@ -54,7 +54,36 @@ if (is_post() && isset($_POST['checkout'])) {
         header('Location: index.php?page=sales');
         exit;
     }
-    $customerId = $_POST['customer_id'] !== '' ? (int)$_POST['customer_id'] : null;
+
+    $customerName = trim($_POST['customer_name'] ?? '');
+    $customerId = null;
+
+    // If customer name is provided but not in dropdown, create new customer
+    if ($customerName !== '') {
+        // Check if customer exists
+        $checkStmt = $conn->prepare('SELECT customer_id FROM customers WHERE customer_name = ?');
+        $checkStmt->bind_param('s', $customerName);
+        $checkStmt->execute();
+        $result = $checkStmt->get_result();
+
+        if ($result->num_rows > 0) {
+            // Customer exists, get ID
+            $customerRow = $result->fetch_assoc();
+            $customerId = $customerRow['customer_id'];
+        } else {
+            // Create new customer
+            $insertStmt = $conn->prepare('INSERT INTO customers (customer_name) VALUES (?)');
+            $insertStmt->bind_param('s', $customerName);
+            if ($insertStmt->execute()) {
+                $customerId = $insertStmt->insert_id;
+                flash('info', 'New customer created: ' . $customerName);
+            }
+        }
+    } else {
+        // Use dropdown selection
+        $customerId = $_POST['customer_id'] !== '' ? (int)$_POST['customer_id'] : null;
+    }
+
     $currentUser = current_user();
     $userId = $currentUser ? (int)($currentUser['user_id'] ?? $currentUser['id'] ?? 0) : 0;
 
@@ -195,16 +224,26 @@ $recentSales = $conn->query('
 
                     <form method="post">
                         <input type="hidden" name="checkout" value="1">
+
+                        <!-- Customer Input Section -->
                         <div class="form-group">
-                            <label class="form-label">Customer (optional)</label>
+                            <label class="form-label">Customer Name (Optional)</label>
+                            <input class="form-control" type="text" name="customer_name" placeholder="Enter new customer name" value="">
+                            <small class="text-muted">Enter new customer name or select from dropdown below</small>
+                        </div>
+
+                        <div class="form-group" style="margin-top: var(--spacing-md);">
+                            <label class="form-label">Or Select Existing Customer</label>
                             <select class="form-select" name="customer_id">
-                                <option value="">Walk-in Customer</option>
+                                <option value="">Select existing customer (optional)</option>
                                 <?php foreach ($customers as $c): ?>
                                     <option value="<?php echo $c['customer_id']; ?>"><?php echo sanitize($c['customer_name']); ?></option>
                                 <?php endforeach; ?>
                             </select>
+                            <small class="text-muted">Leave both empty for walk-in customer</small>
                         </div>
-                        <button class="btn btn-success w-100" type="submit">
+
+                        <button class="btn btn-success w-100" type="submit" style="margin-top: var(--spacing-md);">
                             <i class="bi bi-check-circle"></i> Complete Checkout
                         </button>
                     </form>
