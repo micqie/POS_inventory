@@ -1,6 +1,7 @@
-
 <?php
 // index.php
+// Start output buffering to allow headers after output
+ob_start();
 session_start();
 require_once __DIR__ . '/connect_db.php';
 require_once __DIR__ . '/functions.php';
@@ -89,3 +90,5 @@ include __DIR__ . '/includes/header.php';
 </div>
 <?php
 include __DIR__ . '/includes/footer.php';
+// Flush output buffer
+ob_end_flush();
