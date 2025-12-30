@@ -20,9 +20,8 @@ if (!is_logged_in() && !in_array($currentPage, $publicPages, true)) {
 $rolePermissions = [
     'admin' => ['dashboard', 'categories', 'products', 'suppliers', 'customers',
                 'inventory', 'sales', 'reports', 'users'],
-    'cashier' => ['dashboard', 'products', 'customers', 'sales'],
-    'manager' => ['dashboard', 'categories', 'products', 'suppliers', 'customers',
-                  'inventory', 'sales', 'reports']
+    'cashier' => ['dashboard', 'products', 'customers', 'sales']
+
 ];
 
 // Get current user role (default to cashier if not set)

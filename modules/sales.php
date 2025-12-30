@@ -259,12 +259,12 @@ $recentSales = $conn->query('
         <div class="card-body" style="padding: 0;">
             <div class="table-container">
                 <table class="table table-hover align-middle">
-                    <thead>
+                    <thead>     
                         <tr>
                             <th>ID</th>
                             <th>Total Amount</th>
                             <th>Customer</th>
-                            <th>Cashier</th>
+                            <th>User</th>
                             <th>Date</th>
                         </tr>
                     </thead>

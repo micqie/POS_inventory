@@ -10,6 +10,37 @@ foreach ($tables as $tbl) {
 // Calculate total revenue
 $resRevenue = $conn->query("SELECT SUM(total_amount) AS revenue FROM sales");
 $totalRevenue = $resRevenue ? (float)$resRevenue->fetch_assoc()['revenue'] : 0;
+
+
+$startDate = $_GET['start_date'] ?? date('Y-m-d', strtotime('-6 days'));
+$endDate   = $_GET['end_date'] ?? date('Y-m-d');
+
+// Ensure end date is not before start date
+if (strtotime($endDate) < strtotime($startDate)) {
+    $endDate = $startDate;
+}
+
+// Fetch top 5 products
+$topProductsStmt = $conn->prepare("
+    SELECT p.product_name, SUM(sd.quantity) AS qty
+    FROM sale_details sd
+    JOIN products p ON p.product_id = sd.product_id
+    JOIN sales s ON s.sale_id = sd.sale_id
+    WHERE DATE(s.sale_date) BETWEEN ? AND ?
+    GROUP BY p.product_id, p.product_name
+    ORDER BY qty DESC
+    LIMIT 5
+");
+$topProductsStmt->bind_param("ss", $startDate, $endDate);
+$topProductsStmt->execute();
+$topProductsResult = $topProductsStmt->get_result();
+
+$topProducts = [];
+while ($row = $topProductsResult->fetch_assoc()) {
+    $topProducts[] = $row;
+}
+
+
 ?>
 
 <main>
@@ -78,6 +109,46 @@ $totalRevenue = $resRevenue ? (float)$resRevenue->fetch_assoc()['revenue'] : 0;
             <span class="metric-indicator bg-danger-subtle text-danger">
                 <i class="bi bi-currency-dollar"></i>
             </span>
+        </div>
+    </div>
+
+       <div class="card">
+            <div class="card-header">
+                <i class="bi bi-star"></i> Top 5 Products
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <?php if (!empty($topProducts)): ?>
+                    <div class="table-container">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Product</th>
+                                    <th class="text-end">Qty Sold</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($topProducts as $index => $product): ?>
+                                    <tr>
+                                        <td><?php echo $index + 1; ?></td>
+                                        <td><strong><?php echo sanitize($product['product_name']); ?></strong></td>
+                                        <td class="text-end">
+                                            <span style="padding: 4px 10px; border-radius: var(--radius-sm); font-weight: 600; font-size: var(--font-size-xs); background: var(--primary-100); color: var(--primary-700);">
+                                                <?php echo $product['qty']; ?> units
+                                            </span>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <div class="text-center text-muted" style="padding: var(--spacing-2xl);">
+                        <i class="bi bi-inbox" style="font-size: var(--font-size-3xl); display: block; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
+                        No product data in this period
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 </main>

@@ -55,7 +55,6 @@ $categories = $conn->query('SELECT * FROM categories ORDER BY category_id DESC')
         </div>
         <div class="card-body">
             <form method="post" style="display: flex; gap: var(--spacing-md); align-items: flex-end; flex-wrap: wrap;">
-                <input type="hidden" name="category_id" value="<?php echo $editItem['category_id'] ?? ''; ?>">
                 <div class="form-group" style="flex: 1; min-width: 250px; margin-bottom: 0;">
                     <label class="form-label">Category Name</label>
                     <input class="form-control" type="text" name="category_name" required value="<?php echo sanitize($editItem['category_name'] ?? ''); ?>" placeholder="Enter category name">
@@ -82,7 +81,7 @@ $categories = $conn->query('SELECT * FROM categories ORDER BY category_id DESC')
                 <table class="table table-hover align-middle">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            
                             <th>Name</th>
                             <th>Created</th>
                             <th class="text-end">Actions</th>
@@ -99,7 +98,7 @@ $categories = $conn->query('SELECT * FROM categories ORDER BY category_id DESC')
                         <?php else: ?>
                             <?php foreach ($categories as $cat): ?>
                                 <tr>
-                                    <td><?php echo $cat['category_id']; ?></td>
+                                 
                                     <td><strong><?php echo sanitize($cat['category_name']); ?></strong></td>
                                     <td><?php echo date('M d, Y', strtotime($cat['created_at'])); ?></td>
                                     <td class="text-end">

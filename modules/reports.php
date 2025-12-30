@@ -106,12 +106,7 @@ $totalSales = array_sum($chartValues);
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-filter"></i> Apply Filter
                     </button>
-                    <button type="button" class="btn btn-secondary" onclick="resetDates()">
-                        <i class="bi bi-arrow-clockwise"></i> Reset
-                    </button>
-                    <button type="button" class="btn btn-success" onclick="exportToExcel()">
-                        <i class="bi bi-file-earmark-excel"></i> Export
-                    </button>
+                 
                 </div>
             </form>
             <div style="margin-top: var(--spacing-md); display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">

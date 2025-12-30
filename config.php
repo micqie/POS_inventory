@@ -12,10 +12,6 @@ $rolePermissions = [
     'cashier' => [
         'dashboard', 'products', 'customers', 'sales'
     ],
-    'manager' => [
-        'dashboard', 'categories', 'products', 'suppliers',
-        'customers', 'inventory', 'sales', 'reports'
-    ]
 ];
 
 // Public pages that don't require authentication

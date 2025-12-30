@@ -86,10 +86,7 @@ $products = $conn->query('
                     <label class="form-label">Price</label>
                     <input class="form-control" type="number" step="0.01" name="price" required value="<?php echo $editItem['price'] ?? '0'; ?>" placeholder="0.00">
                 </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label">Stock Quantity</label>
-                    <input class="form-control" type="number" name="stock" required value="<?php echo $editItem['stock'] ?? '0'; ?>" placeholder="0">
-                </div>
+          
                 <div class="form-group" style="display: flex; gap: var(--spacing-md); align-items: flex-end; margin-bottom: 0;">
                     <button class="btn btn-primary" type="submit">
                         <i class="bi bi-<?php echo $editItem ? 'check-circle' : 'plus-circle'; ?>"></i>
