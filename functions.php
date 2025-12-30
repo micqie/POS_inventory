@@ -53,7 +53,8 @@ function current_user()
     // Return data in consistent format
     if (isset($_SESSION['user_id'])) {
         return [
-            'id' => $_SESSION['user_id'],
+            'user_id' => $_SESSION['user_id'],
+            'id' => $_SESSION['user_id'], // Also include 'id' for backward compatibility
             'username' => $_SESSION['username'] ?? '',
             'role' => $_SESSION['user_role'] ?? ''
         ];
@@ -61,7 +62,12 @@ function current_user()
 
     // Fallback to old format
     if (isset($_SESSION['user'])) {
-        return $_SESSION['user'];
+        $user = $_SESSION['user'];
+        // Ensure user_id exists even if old format uses 'id'
+        if (isset($user['id']) && !isset($user['user_id'])) {
+            $user['user_id'] = $user['id'];
+        }
+        return $user;
     }
 
     return null;

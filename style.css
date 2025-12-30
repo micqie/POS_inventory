@@ -926,6 +926,11 @@ footer {
     .auth-card {
         padding: var(--spacing-xl);
     }
+
+    /* Reports page responsive */
+    .reports-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 /* --- 18. Scrollbar Styling --- */

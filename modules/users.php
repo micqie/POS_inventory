@@ -35,7 +35,9 @@ if (is_post()) {
 
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
-    if ($id === (int)current_user()['user_id']) {
+    $currentUser = current_user();
+    $currentUserId = $currentUser ? (int)($currentUser['user_id'] ?? $currentUser['id'] ?? 0) : 0;
+    if ($id === $currentUserId) {
         flash('error', 'Cannot delete your own account.');
     } else {
         $stmt = $conn->prepare('DELETE FROM users WHERE user_id=?');
@@ -138,7 +140,10 @@ $users = $conn->query('SELECT * FROM users ORDER BY user_id DESC')->fetch_all(MY
                                         <a class="btn btn-sm btn-outline-secondary" href="index.php?page=users&edit=<?php echo $u['user_id']; ?>">
                                             <i class="bi bi-pencil"></i> Edit
                                         </a>
-                                        <?php if ($u['user_id'] !== (int)current_user()['user_id']): ?>
+                                        <?php
+                                        $currentUser = current_user();
+                                        $currentUserId = $currentUser ? (int)($currentUser['user_id'] ?? $currentUser['id'] ?? 0) : 0;
+                                        if ($u['user_id'] !== $currentUserId): ?>
                                             <a class="btn btn-sm btn-outline-danger" href="index.php?page=users&delete=<?php echo $u['user_id']; ?>" onclick="return confirm('Are you sure you want to delete this user?');">
                                                 <i class="bi bi-trash"></i> Delete
                                             </a>

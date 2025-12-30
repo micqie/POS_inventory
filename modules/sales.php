@@ -55,7 +55,8 @@ if (is_post() && isset($_POST['checkout'])) {
         exit;
     }
     $customerId = $_POST['customer_id'] !== '' ? (int)$_POST['customer_id'] : null;
-    $userId = current_user()['user_id'];
+    $currentUser = current_user();
+    $userId = $currentUser ? (int)($currentUser['user_id'] ?? $currentUser['id'] ?? 0) : 0;
 
     // Re-validate stock
     foreach ($_SESSION['cart'] as $item) {

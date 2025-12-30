@@ -38,7 +38,7 @@ while ($row = $salesResult->fetch_assoc()) {
     $chartValues[] = (float)$row['total'];
 }
 
-// Fetch top products for the display (without revenue)
+// Fetch top products for the display
 $topProductsStmt = $conn->prepare("
     SELECT p.product_name, SUM(sd.quantity) AS qty
     FROM sale_details sd
@@ -81,291 +81,233 @@ $totalSales = array_sum($chartValues);
 ?>
 
 <main>
-    <div class="container-fluid">
-        <div class="page-header my-4">
-            <h1 class="page-title">Sales Reports</h1>
-            <p class="page-subtitle">Analyze sales performance and export data</p>
+    <div class="page-header">
+        <h1 class="page-title">Sales Reports</h1>
+        <p class="page-subtitle">Analyze sales performance and export data</p>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-funnel"></i> Filter Reports
+        </div>
+        <div class="card-body">
+            <form method="GET" action="" id="reportFilterForm" style="display: flex; gap: var(--spacing-md); align-items: flex-end; flex-wrap: wrap;">
+                <input type="hidden" name="page" value="reports">
+                <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" class="form-control" name="start_date" id="start_date" value="<?php echo htmlspecialchars($startDate); ?>" max="<?php echo date('Y-m-d'); ?>" required>
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+                    <label class="form-label">End Date</label>
+                    <input type="date" class="form-control" name="end_date" id="end_date" value="<?php echo htmlspecialchars($endDate); ?>" max="<?php echo date('Y-m-d'); ?>" required>
+                </div>
+                <div style="display: flex; gap: var(--spacing-sm);">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-filter"></i> Apply Filter
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetDates()">
+                        <i class="bi bi-arrow-clockwise"></i> Reset
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="exportToExcel()">
+                        <i class="bi bi-file-earmark-excel"></i> Export
+                    </button>
+                </div>
+            </form>
+            <div style="margin-top: var(--spacing-md); display: flex; gap: var(--spacing-sm); flex-wrap: wrap;">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setDateRange(7)">Last 7 Days</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setDateRange(30)">Last 30 Days</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setDateRange(90)">Last 90 Days</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setMonthToDate()">Month to Date</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setYearToDate()">Year to Date</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="dashboard-cards" style="margin-bottom: var(--spacing-xl);">
+        <div class="metric-card">
+            <div>
+                <p class="text-muted mb-1" style="font-size: var(--font-size-sm); font-weight: 500;">Total Sales</p>
+                <h4 class="mb-0 fw-bold" style="font-size: var(--font-size-2xl);">$<?php echo number_format($totalSales, 2); ?></h4>
+                <p class="text-muted mb-0" style="font-size: var(--font-size-xs); margin-top: var(--spacing-xs);"><?php echo date('M d, Y', strtotime($startDate)); ?> - <?php echo date('M d, Y', strtotime($endDate)); ?></p>
+            </div>
+            <span class="metric-indicator bg-primary-subtle text-primary">
+                <i class="bi bi-currency-dollar"></i>
+            </span>
         </div>
 
-        <!-- Filter Form -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="metric-card">
+            <div>
+                <p class="text-muted mb-1" style="font-size: var(--font-size-sm); font-weight: 500;">Total Transactions</p>
+                <h4 class="mb-0 fw-bold" style="font-size: var(--font-size-2xl);"><?php echo number_format($totalTransactions); ?></h4>
+                <p class="text-muted mb-0" style="font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">Avg: <?php echo number_format(count($salesData) > 0 ? $totalTransactions / count($salesData) : 0, 1); ?> per day</p>
+            </div>
+            <span class="metric-indicator bg-success-subtle text-success">
+                <i class="bi bi-receipt"></i>
+            </span>
+        </div>
+
+        <div class="metric-card">
+            <div>
+                <p class="text-muted mb-1" style="font-size: var(--font-size-sm); font-weight: 500;">Days with Sales</p>
+                <h4 class="mb-0 fw-bold" style="font-size: var(--font-size-2xl);"><?php echo count($salesData); ?></h4>
+                <p class="text-muted mb-0" style="font-size: var(--font-size-xs); margin-top: var(--spacing-xs);">Out of <?php echo max(1, round((strtotime($endDate) - strtotime($startDate)) / (60 * 60 * 24)) + 1); ?> days</p>
+            </div>
+            <span class="metric-indicator bg-info-subtle text-info">
+                <i class="bi bi-calendar-check"></i>
+            </span>
+        </div>
+    </div>
+
+    <!-- Charts and Data Display -->
+    <div class="reports-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--spacing-lg); margin-bottom: var(--spacing-xl);">
+        <!-- Sales Chart -->
+        <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <i class="bi bi-funnel"></i> Filter Reports
+                    <i class="bi bi-bar-chart"></i> Sales Trend
+                    <span style="color: var(--text-muted); font-size: var(--font-size-sm); margin-left: var(--spacing-sm);"><?php echo date('M d, Y', strtotime($startDate)); ?> to <?php echo date('M d, Y', strtotime($endDate)); ?></span>
                 </div>
-                <div>
-                    <!-- Using JavaScript function for export -->
-                    <button type="button" class="btn btn-success" onclick="exportToExcel()">
-                        <i class="bi bi-file-earmark-excel"></i> Export to Excel
-                    </button>
+                <div style="display: flex; gap: var(--spacing-xs);">
+                    <button type="button" class="btn btn-sm btn-outline-secondary active" onclick="changeChartType('bar')">Bar</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeChartType('line')">Line</button>
                 </div>
             </div>
             <div class="card-body">
-                <form method="GET" action="" id="reportFilterForm">
-                    <input type="hidden" name="page" value="reports">
-
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group mb-3">
-                                <label class="form-label">Start Date</label>
-                                <input type="date"
-                                       class="form-control"
-                                       name="start_date"
-                                       id="start_date"
-                                       value="<?php echo htmlspecialchars($startDate); ?>"
-                                       max="<?php echo date('Y-m-d'); ?>"
-                                       required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group mb-3">
-                                <label class="form-label">End Date</label>
-                                <input type="date"
-                                       class="form-control"
-                                       name="end_date"
-                                       id="end_date"
-                                       value="<?php echo htmlspecialchars($endDate); ?>"
-                                       max="<?php echo date('Y-m-d'); ?>"
-                                       required>
-                            </div>
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100 mb-3">
-                                <i class="bi bi-filter"></i> Apply Filter
-                            </button>
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="button" class="btn btn-outline-secondary w-100 mb-3" onclick="resetDates()">
-                                <i class="bi bi-arrow-clockwise"></i> Reset
-                            </button>
-                        </div>
+                <div style="height: 300px;">
+                    <canvas id="salesChart"></canvas>
+                </div>
+                <?php if (empty($chartValues)): ?>
+                    <div class="text-center text-muted" style="padding: var(--spacing-2xl);">
+                        <i class="bi bi-bar-chart" style="font-size: var(--font-size-3xl); display: block; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
+                        No chart data available for this period
                     </div>
-
-                    <!-- Quick Date Filters -->
-                    <div class="row mt-2">
-                        <div class="col-12">
-                            <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setDateRange(7)">Last 7 Days</button>
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setDateRange(30)">Last 30 Days</button>
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setDateRange(90)">Last 90 Days</button>
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setMonthToDate()">Month to Date</button>
-                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="setYearToDate()">Year to Date</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                <?php endif; ?>
             </div>
         </div>
 
-        <!-- Summary Cards -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card bg-primary text-white">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2">Total Sales</h6>
-                                <h3 class="card-title">$<?php echo number_format($totalSales, 2); ?></h3>
-                            </div>
-                            <i class="bi bi-currency-dollar" style="font-size: 48px; opacity: 0.7;"></i>
-                        </div>
-                        <p class="card-text mb-0"><?php echo date('M d, Y', strtotime($startDate)); ?> - <?php echo date('M d, Y', strtotime($endDate)); ?></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card bg-success text-white">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2">Total Transactions</h6>
-                                <h3 class="card-title"><?php echo $totalTransactions; ?></h3>
-                            </div>
-                            <i class="bi bi-receipt" style="font-size: 48px; opacity: 0.7;"></i>
-                        </div>
-                        <p class="card-text mb-0">Average: <?php echo number_format(count($salesData) > 0 ? $totalTransactions / count($salesData) : 0, 1); ?> per day</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card bg-info text-white">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2">Days with Sales</h6>
-                                <h3 class="card-title"><?php echo count($salesData); ?></h3>
-                            </div>
-                            <i class="bi bi-calendar-check" style="font-size: 48px; opacity: 0.7;"></i>
-                        </div>
-                        <p class="card-text mb-0">Out of <?php echo max(1, round((strtotime($endDate) - strtotime($startDate)) / (60 * 60 * 24)) + 1); ?> days</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts and Data Display -->
-        <div class="row mb-4">
-            <!-- Sales Chart -->
-            <div class="col-md-8">
-                <div class="card h-100">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="bi bi-bar-chart"></i> Sales Trend
-                            <small class="text-muted ms-2"><?php echo date('M d, Y', strtotime($startDate)); ?> to <?php echo date('M d, Y', strtotime($endDate)); ?></small>
-                        </div>
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-sm btn-outline-secondary active" onclick="changeChartType('bar')">Bar</button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="changeChartType('line')">Line</button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div style="height: 300px;">
-                            <canvas id="salesChart"></canvas>
-                        </div>
-                        <?php if (empty($chartValues)): ?>
-                            <div class="text-center text-muted py-4">
-                                <i class="bi bi-bar-chart" style="font-size: 48px; opacity: 0.3;"></i>
-                                <p class="mt-2">No chart data available for this period</p>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Top Products -->
-            <div class="col-md-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <i class="bi bi-star"></i> Top 5 Products
-                    </div>
-                    <div class="card-body">
-                        <?php if (!empty($topProducts)): ?>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Product</th>
-                                            <th class="text-end">Qty Sold</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($topProducts as $index => $product): ?>
-                                            <tr>
-                                                <td class="text-muted"><?php echo $index + 1; ?></td>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="flex-shrink-0">
-                                                            <span class="badge bg-primary rounded-pill" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;">
-                                                                <?php echo $index + 1; ?>
-                                                            </span>
-                                                        </div>
-                                                        <div class="flex-grow-1 ms-2">
-                                                            <?php echo htmlspecialchars($product['product_name']); ?>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="text-end">
-                                                    <span class="badge bg-primary rounded-pill"><?php echo $product['qty']; ?> units</span>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <?php else: ?>
-                            <div class="text-center text-muted py-4">
-                                <i class="bi bi-inbox" style="font-size: 48px; opacity: 0.3;"></i>
-                                <p class="mt-2">No product data in this period</p>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Data Table -->
+        <!-- Top Products -->
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                    <i class="bi bi-table"></i> Sales Report Summary
-                </div>
-                <div>
-                    <!-- Using JavaScript function for export -->
-                    <button type="button" class="btn btn-success" onclick="exportToExcel()">
-                        <i class="bi bi-file-earmark-excel"></i> Export to Excel
-                    </button>
-                </div>
+            <div class="card-header">
+                <i class="bi bi-star"></i> Top 5 Products
             </div>
             <div class="card-body" style="padding: 0;">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Date</th>
-                                <th class="text-end">Total Sales</th>
-                                <th class="text-end">Transactions</th>
-                                <th class="text-end">Avg. Transaction</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($salesData)): ?>
-                                <?php foreach ($salesData as $sale):
-                                    $transactionCount = $counts[$sale['day']] ?? 0;
-                                    $avgTransaction = $transactionCount > 0 ? $sale['total'] / $transactionCount : 0;
-                                ?>
+                <?php if (!empty($topProducts)): ?>
+                    <div class="table-container">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Product</th>
+                                    <th class="text-end">Qty Sold</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($topProducts as $index => $product): ?>
                                     <tr>
-                                        <td>
-                                            <i class="bi bi-calendar me-1"></i>
-                                            <?php echo date('D, M d, Y', strtotime($sale['day'])); ?>
-                                        </td>
+                                        <td><?php echo $index + 1; ?></td>
+                                        <td><strong><?php echo sanitize($product['product_name']); ?></strong></td>
                                         <td class="text-end">
-                                            <strong class="text-primary">$<?php echo number_format($sale['total'], 2); ?></strong>
-                                        </td>
-                                        <td class="text-end">
-                                            <span class="badge bg-secondary"><?php echo $transactionCount; ?> trans</span>
-                                        </td>
-                                        <td class="text-end">
-                                            <small class="text-muted">$<?php echo number_format($avgTransaction, 2); ?></small>
+                                            <span style="padding: 4px 10px; border-radius: var(--radius-sm); font-weight: 600; font-size: var(--font-size-xs); background: var(--primary-100); color: var(--primary-700);">
+                                                <?php echo $product['qty']; ?> units
+                                            </span>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="4" class="text-center text-muted py-5">
-                                        <i class="bi bi-inbox" style="font-size: 48px; opacity: 0.3;"></i>
-                                        <p class="mt-2">No sales data in this period</p>
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                        <?php if (!empty($salesData)): ?>
-                            <tfoot class="table-light">
-                                <tr>
-                                    <td><strong>Total / Average</strong></td>
-                                    <td class="text-end">
-                                        <strong class="text-success">$<?php echo number_format($totalSales, 2); ?></strong>
-                                    </td>
-                                    <td class="text-end">
-                                        <strong><?php echo $totalTransactions; ?> transactions</strong>
-                                    </td>
-                                    <td class="text-end">
-                                        <strong>$<?php echo number_format($totalTransactions > 0 ? $totalSales / $totalTransactions : 0, 2); ?></strong>
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        <?php endif; ?>
-                    </table>
-                </div>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <div class="text-center text-muted" style="padding: var(--spacing-2xl);">
+                        <i class="bi bi-inbox" style="font-size: var(--font-size-3xl); display: block; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
+                        No product data in this period
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
-
-        <!-- Hidden form for export (alternative method) -->
-        <form id="excelExportForm" method="GET" action="export_sales_report.php" target="_blank" style="display: none;">
-            <input type="hidden" name="start_date" id="export_start_date">
-            <input type="hidden" name="end_date" id="export_end_date">
-        </form>
     </div>
+
+    <!-- Main Data Table -->
+    <div class="card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <i class="bi bi-table"></i> Sales Report Summary
+            </div>
+            <button type="button" class="btn btn-sm btn-success" onclick="exportToExcel()">
+                <i class="bi bi-file-earmark-excel"></i> Export to Excel
+            </button>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            <div class="table-container">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th class="text-end">Total Sales</th>
+                            <th class="text-end">Transactions</th>
+                            <th class="text-end">Avg. Transaction</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($salesData)): ?>
+                            <?php foreach ($salesData as $sale):
+                                $transactionCount = $counts[$sale['day']] ?? 0;
+                                $avgTransaction = $transactionCount > 0 ? $sale['total'] / $transactionCount : 0;
+                            ?>
+                                <tr>
+                                    <td>
+                                        <i class="bi bi-calendar" style="margin-right: var(--spacing-xs);"></i>
+                                        <?php echo date('D, M d, Y', strtotime($sale['day'])); ?>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong style="color: var(--primary-600);">$<?php echo number_format($sale['total'], 2); ?></strong>
+                                    </td>
+                                    <td class="text-end">
+                                        <span style="padding: 4px 10px; border-radius: var(--radius-sm); font-weight: 600; font-size: var(--font-size-xs); background: var(--bg-tertiary); color: var(--text-primary);">
+                                            <?php echo $transactionCount; ?> trans
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span style="color: var(--text-muted);">$<?php echo number_format($avgTransaction, 2); ?></span>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="4" class="text-center text-muted" style="padding: var(--spacing-2xl);">
+                                    <i class="bi bi-inbox" style="font-size: var(--font-size-3xl); display: block; margin-bottom: var(--spacing-md); opacity: 0.5;"></i>
+                                    No sales data in this period
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                    <?php if (!empty($salesData)): ?>
+                        <tfoot style="background: var(--bg-secondary);">
+                            <tr>
+                                <td><strong>Total / Average</strong></td>
+                                <td class="text-end">
+                                    <strong style="color: var(--success);">$<?php echo number_format($totalSales, 2); ?></strong>
+                                </td>
+                                <td class="text-end">
+                                    <strong><?php echo $totalTransactions; ?> transactions</strong>
+                                </td>
+                                <td class="text-end">
+                                    <strong>$<?php echo number_format($totalTransactions > 0 ? $totalSales / $totalTransactions : 0, 2); ?></strong>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    <?php endif; ?>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden form for export -->
+    <form id="excelExportForm" method="GET" action="export_sales_report.php" target="_blank" style="display: none;">
+        <input type="hidden" name="start_date" id="export_start_date">
+        <input type="hidden" name="end_date" id="export_end_date">
+    </form>
 </main>
 
 <!-- Chart.js Library -->
@@ -377,7 +319,6 @@ let salesChart = null;
 
 // Initialize Sales Chart
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize chart if we have data
     const chartData = <?php echo json_encode($chartValues); ?>;
     const chartLabels = <?php echo json_encode($chartLabels); ?>;
 
@@ -385,7 +326,6 @@ document.addEventListener('DOMContentLoaded', function() {
         initChart('bar');
     }
 
-    // Update export form when dates change
     document.getElementById('start_date').addEventListener('change', updateExportForm);
     document.getElementById('end_date').addEventListener('change', updateExportForm);
 });
@@ -395,7 +335,6 @@ function initChart(type) {
     const chartData = <?php echo json_encode($chartValues); ?>;
     const chartLabels = <?php echo json_encode($chartLabels); ?>;
 
-    // Destroy existing chart if it exists
     if (salesChart) {
         salesChart.destroy();
     }
@@ -407,12 +346,12 @@ function initChart(type) {
             datasets: [{
                 label: 'Daily Sales ($)',
                 data: chartData,
-                backgroundColor: type === 'bar' ? 'rgba(54, 162, 235, 0.7)' : 'transparent',
-                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: type === 'bar' ? 'rgba(2, 132, 199, 0.7)' : 'transparent',
+                borderColor: 'rgba(2, 132, 199, 1)',
                 borderWidth: 2,
                 fill: type === 'line',
                 tension: 0.4,
-                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                pointBackgroundColor: 'rgba(2, 132, 199, 1)',
                 pointBorderColor: '#fff',
                 pointBorderWidth: 2,
                 pointRadius: 4
@@ -460,24 +399,19 @@ function initChart(type) {
 }
 
 function changeChartType(type) {
-    // Update button states
     document.querySelectorAll('[onclick^="changeChartType"]').forEach(btn => {
         btn.classList.remove('active');
-        if (btn.textContent.toLowerCase() === type) {
+        if (btn.textContent.toLowerCase().includes(type)) {
             btn.classList.add('active');
         }
     });
-
-    // Reinitialize chart with new type
     initChart(type);
 }
 
-// Quick date range functions
 function setDateRange(days) {
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - (days - 1));
-
     document.getElementById('start_date').value = formatDate(startDate);
     document.getElementById('end_date').value = formatDate(endDate);
     updateExportForm();
@@ -486,7 +420,6 @@ function setDateRange(days) {
 function setMonthToDate() {
     const now = new Date();
     const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-
     document.getElementById('start_date').value = formatDate(startDate);
     document.getElementById('end_date').value = formatDate(now);
     updateExportForm();
@@ -495,7 +428,6 @@ function setMonthToDate() {
 function setYearToDate() {
     const now = new Date();
     const startDate = new Date(now.getFullYear(), 0, 1);
-
     document.getElementById('start_date').value = formatDate(startDate);
     document.getElementById('end_date').value = formatDate(now);
     updateExportForm();
@@ -505,7 +437,6 @@ function resetDates() {
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 6);
-
     document.getElementById('start_date').value = formatDate(startDate);
     document.getElementById('end_date').value = formatDate(endDate);
     updateExportForm();
@@ -521,13 +452,10 @@ function formatDate(date) {
 function updateExportForm() {
     const startDate = document.getElementById('start_date').value;
     const endDate = document.getElementById('end_date').value;
-
-    // Update hidden export form fields
     document.getElementById('export_start_date').value = startDate;
     document.getElementById('export_end_date').value = endDate;
 }
 
-// Main export function using window.open (preferred)
 function exportToExcel() {
     const startDate = document.getElementById('start_date').value;
     const endDate = document.getElementById('end_date').value;
@@ -537,7 +465,6 @@ function exportToExcel() {
         return;
     }
 
-    // Get the session ID from cookie
     function getSessionId() {
         const cookies = document.cookie.split(';');
         for (let cookie of cookies) {
@@ -555,20 +482,5 @@ function exportToExcel() {
     } else {
         alert('Session expired. Please log in again.');
     }
-}
-// Alternative export function using form submission
-function exportToExcelForm() {
-    const startDate = document.getElementById('start_date').value;
-    const endDate = document.getElementById('end_date').value;
-
-    if (!startDate || !endDate) {
-        alert('Please select both start and end dates.');
-        return;
-    }
-
-    // Set values and submit hidden form
-    document.getElementById('export_start_date').value = startDate;
-    document.getElementById('export_end_date').value = endDate;
-    document.getElementById('excelExportForm').submit();
 }
 </script>
