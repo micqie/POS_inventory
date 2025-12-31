@@ -129,13 +129,43 @@ if (is_post() && isset($_POST['checkout'])) {
 }
 
 $recentSales = $conn->query('
-    SELECT s.sale_id, s.total_amount, s.sale_date, c.customer_name, u.username
+    SELECT s.sale_id, s.total_amount, s.sale_date,
+           c.customer_name, u.username
     FROM sales s
     LEFT JOIN customers c ON c.customer_id = s.customer_id
     JOIN users u ON u.user_id = s.user_id
     ORDER BY s.sale_id DESC
     LIMIT 10
 ')->fetch_all(MYSQLI_ASSOC);
+
+// Function to get sale details
+function getSaleDetails($conn, $saleId) {
+    $stmt = $conn->prepare('
+        SELECT sd.quantity, sd.price, p.product_name
+        FROM sale_details sd
+        JOIN products p ON p.product_id = sd.product_id
+        WHERE sd.sale_id = ?
+        ORDER BY p.product_name
+    ');
+
+    if (!$stmt) {
+        return [];
+    }
+
+    $stmt->bind_param('i', $saleId);
+
+    if (!$stmt->execute()) {
+        $stmt->close();
+        return [];
+    }
+
+    $result = $stmt->get_result();
+    $details = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    return $details ? $details : [];
+}
+
 ?>
 <main>
     <div class="page-header">
@@ -259,7 +289,7 @@ $recentSales = $conn->query('
         <div class="card-body" style="padding: 0;">
             <div class="table-container">
                 <table class="table table-hover align-middle">
-                    <thead>     
+                    <thead>
                         <tr>
                             <th>ID</th>
                             <th>Total Amount</th>
@@ -278,7 +308,7 @@ $recentSales = $conn->query('
                             </tr>
                         <?php else: ?>
                             <?php foreach ($recentSales as $s): ?>
-                                <tr>
+                                <tr class="clickable-row" data-sale-id="<?php echo $s['sale_id']; ?>" style="cursor: pointer;">
                                     <td><?php echo $s['sale_id']; ?></td>
                                     <td><strong style="color: var(--success);">$<?php echo number_format($s['total_amount'], 2); ?></strong></td>
                                     <td><?php echo sanitize($s['customer_name'] ?? 'Walk-in'); ?></td>
@@ -293,3 +323,354 @@ $recentSales = $conn->query('
         </div>
     </div>
 </main>
+
+<!-- Sale Details Modal -->
+<div id="saleModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 90%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px; margin-top: 50px; margin-left: 100px;">
+    <div style="background: white; border-radius: 12px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+        <!-- Modal Header -->
+        <div style="background: linear-gradient(135deg, #4e54c8, #8f94fb); color: white; padding: 20px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="margin: 0; font-size: 1.5rem;">
+                    <i class="bi bi-receipt"></i> Sale Details
+                </h3>
+                <div style="font-size: 0.9rem; opacity: 0.9; margin-top: 5px;">
+                    <span id="modalCustomerName">Loading...</span>
+                </div>
+            </div>
+            <button onclick="closeModal()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 5px;">&times;</button>
+        </div>
+
+        <!-- Modal Body -->
+        <div style="padding: 25px; max-height: calc(90vh - 150px); overflow-y: auto;">
+            <!-- Loading State -->
+            <div id="modalLoading" style="text-align: center; padding: 40px 0;">
+                <div style="border: 4px solid #f3f3f3; border-top: 4px solid #4e54c8; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                <h4 style="color: #666;">Loading sale details...</h4>
+            </div>
+
+            <!-- Content State -->
+            <div id="modalContent" style="display: none;">
+                <!-- Sale Information -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <!-- Customer Info -->
+                    <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background: #f9f9f9;">
+                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                            <div style="background: #4e54c8; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            <h4 style="margin: 0; font-size: 1.1rem; color: #333;">Customer Information</h4>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 4px;">Customer</div>
+                            <div style="display: flex; align-items: center; font-size: 1rem;">
+                                <i class="bi bi-person-fill" style="color: #4e54c8; margin-right: 8px;"></i>
+                                <span id="modalCustomer" style="font-weight: 500;">Loading...</span>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 4px;">User</div>
+                            <div style="display: flex; align-items: center; font-size: 1rem;">
+                                <i class="bi bi-person-badge" style="color: #4e54c8; margin-right: 8px;"></i>
+                                <span id="modalUser" style="font-weight: 500;">Loading...</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 4px;">Date & Time</div>
+                            <div style="display: flex; align-items: center; font-size: 1rem;">
+                                <i class="bi bi-calendar-event" style="color: #4e54c8; margin-right: 8px;"></i>
+                                <span id="modalDate" style="font-weight: 500;">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Info -->
+                    <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background: #f9f9f9;">
+                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                            <div style="background: #28a745; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                <i class="bi bi-currency-dollar"></i>
+                            </div>
+                            <h4 style="margin: 0; font-size: 1.1rem; color: #333;">Payment Information</h4>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 4px;">Total Amount</div>
+                            <div style="display: flex; align-items: center; font-size: 1.1rem;">
+                                <i class="bi bi-cash-stack" style="color: #28a745; margin-right: 8px;"></i>
+                                <span id="modalTotal" style="font-weight: 600; color: #28a745;">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Table -->
+                <div style="margin-top: 30px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4 style="margin: 0; font-size: 1.2rem; color: #333;">
+                            <i class="bi bi-cart-check" style="margin-right: 8px;"></i>
+                            Purchased Products
+                        </h4>
+                        <span id="productCount" style="background: #4e54c8; color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem;">0 items</span>
+                    </div>
+
+                    <div style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead style="background: #f5f5f5;">
+                                <tr>
+                                    <th style="padding: 16px; text-align: left; border-bottom: 1px solid #e0e0e0; font-weight: 600; color: #333;">Product Name</th>
+                                    <th style="padding: 16px; text-align: center; border-bottom: 1px solid #e0e0e0; font-weight: 600; color: #333;">Quantity</th>
+                                    <th style="padding: 16px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; color: #333;">Price</th>
+                                    <th style="padding: 16px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 600; color: #333;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalProductsBody">
+                                <!-- Products will be inserted here -->
+                            </tbody>
+                            <tfoot style="background: #f5f5f5; border-top: 2px solid #e0e0e0;">
+                                <tr>
+                                    <td colspan="3" style="padding: 16px; text-align: right; font-weight: 600; color: #333;">Total Amount:</td>
+                                    <td style="padding: 16px; text-align: right;">
+                                        <span id="modalProductsTotal" style="font-weight: 600; color: #28a745; font-size: 1.2rem;">$0.00</span>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.clickable-row {
+    transition: background-color 0.2s;
+}
+
+.clickable-row:hover {
+    background-color: rgba(78, 84, 200, 0.1);
+}
+
+#modalProductsBody tr {
+    transition: background-color 0.2s;
+}
+
+#modalProductsBody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Custom scrollbar */
+#saleModal > div {
+    scrollbar-width: thin;
+    scrollbar-color: #4e54c8 #f1f1f1;
+}
+
+#saleModal > div::-webkit-scrollbar {
+    width: 8px;
+}
+
+#saleModal > div::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#saleModal > div::-webkit-scrollbar-thumb {
+    background: #4e54c8;
+    border-radius: 4px;
+}
+
+#saleModal > div::-webkit-scrollbar-thumb:hover {
+    background: #3a3f9c;
+}
+</style>
+
+<script>
+// Simple modal functions
+function showModal() {
+    document.getElementById('saleModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+function closeModal() {
+    document.getElementById('saleModal').style.display = 'none';
+    document.body.style.overflow = 'auto'; // Re-enable scrolling
+    resetModal();
+}
+
+function resetModal() {
+    document.getElementById('modalContent').style.display = 'none';
+    document.getElementById('modalLoading').style.display = 'block';
+    document.getElementById('modalCustomerName').textContent = 'Loading...';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click event to table rows
+    document.querySelectorAll('.clickable-row').forEach(row => {
+        row.addEventListener('click', function() {
+            const saleId = this.dataset.saleId;
+            loadSaleDetails(saleId);
+        });
+
+        // Add hover effect
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(78, 84, 200, 0.1)';
+        });
+
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('saleModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
+});
+
+function loadSaleDetails(saleId) {
+    // Show modal with loading state
+    resetModal();
+    showModal();
+
+    // Fetch sale details via AJAX
+    fetch(`index.php?page=sales&ajax=sale_details&sale_id=${saleId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Check for error response
+            if (data.error) {
+                throw new Error(data.message || 'Failed to load sale details');
+            }
+
+            // Validate data structure
+            if (!data.saleInfo) {
+                throw new Error('Invalid response data: missing saleInfo');
+            }
+
+            // Ensure details is an array (can be empty)
+            if (!Array.isArray(data.details)) {
+                data.details = [];
+            }
+
+            // Hide loading, show content
+            document.getElementById('modalLoading').style.display = 'none';
+            document.getElementById('modalContent').style.display = 'block';
+
+            // Update modal title with customer name
+            const customerName = data.saleInfo.customer_name || 'Walk-in Customer';
+            document.getElementById('modalCustomerName').textContent = customerName;
+
+            // Update sale information
+            document.getElementById('modalCustomer').textContent = customerName;
+            document.getElementById('modalUser').textContent = data.saleInfo.username || 'Unknown User';
+
+            // Format date nicely
+            const saleDate = new Date(data.saleInfo.sale_date);
+            const formattedDate = saleDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('modalDate').textContent = formattedDate;
+
+            // Update payment info
+            document.getElementById('modalTotal').textContent = '$' + parseFloat(data.saleInfo.total_amount || 0).toFixed(2);
+
+            // Update products table
+            let productsHTML = '';
+            let total = 0;
+            let itemCount = 0;
+
+            if (data.details && data.details.length > 0) {
+                data.details.forEach(item => {
+                    const subtotal = parseFloat(item.quantity) * parseFloat(item.price);
+                    total += subtotal;
+                    itemCount += parseInt(item.quantity);
+
+                    productsHTML += `
+                        <tr>
+                            <td style="padding: 16px; border-bottom: 1px solid #e0e0e0;">
+                                <div style="font-weight: 500; color: #333;">
+                                    ${escapeHtml(item.product_name || 'Unknown Product')}
+                                </div>
+                            </td>
+                            <td style="padding: 16px; text-align: center; border-bottom: 1px solid #e0e0e0;">
+                                <span style="background: #4e54c8; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.9rem;">
+                                    ${item.quantity}
+                                </span>
+                            </td>
+                            <td style="padding: 16px; text-align: right; border-bottom: 1px solid #e0e0e0; color: #333;">
+                                $${parseFloat(item.price || 0).toFixed(2)}
+                            </td>
+                            <td style="padding: 16px; text-align: right; border-bottom: 1px solid #e0e0e0; font-weight: 500; color: #333;">
+                                $${subtotal.toFixed(2)}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                productsHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px; color: #666;">
+                            <i class="bi bi-exclamation-circle"></i>
+                            No products found for this sale
+                        </td>
+                    </tr>
+                `;
+            }
+
+            document.getElementById('modalProductsBody').innerHTML = productsHTML;
+            document.getElementById('modalProductsTotal').textContent = '$' + total.toFixed(2);
+            document.getElementById('productCount').textContent = itemCount + ' item' + (itemCount !== 1 ? 's' : '');
+
+        })
+        .catch(error => {
+            console.error('Error loading sale details:', error);
+            console.error('Error details:', error.message);
+
+            // Show error message
+            document.getElementById('modalLoading').style.display = 'block';
+            document.getElementById('modalLoading').innerHTML = `
+                <div style="text-align: center; padding: 40px 0;">
+                    <div style="background: #dc3545; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 1.5rem;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <h4 style="color: #dc3545; margin-bottom: 10px;">Failed to load sale details</h4>
+                    <p style="color: #666; margin-bottom: 10px;">${error.message || 'Please try again or check your connection'}</p>
+                    <p style="color: #999; font-size: 0.85rem; margin-bottom: 20px;">Sale ID: ${saleId}</p>
+                    <button onclick="loadSaleDetails(${saleId})" style="background: #4e54c8; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                        <i class="bi bi-arrow-clockwise"></i> Retry
+                    </button>
+                </div>
+            `;
+        });
+}
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>

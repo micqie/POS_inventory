@@ -64,6 +64,96 @@ if ($page === 'seed_admin') {
     exit;
 }
 
+// Handle AJAX requests BEFORE including header to avoid HTML output
+if (isset($_GET['ajax']) && $_GET['ajax'] === 'sale_details' && isset($_GET['sale_id']) && $page === 'sales') {
+    header('Content-Type: application/json');
+
+    $saleId = (int)$_GET['sale_id'];
+
+    if ($saleId <= 0) {
+        http_response_code(400);
+        echo json_encode([
+            'error' => true,
+            'message' => 'Invalid sale ID'
+        ]);
+        exit;
+    }
+
+    try {
+        // Get sale header info first
+        $stmt = $conn->prepare("
+            SELECT s.sale_id, s.total_amount, s.sale_date,
+                   c.customer_name, u.username
+            FROM sales s
+            LEFT JOIN customers c ON c.customer_id = s.customer_id
+            JOIN users u ON u.user_id = s.user_id
+            WHERE s.sale_id = ?
+        ");
+
+        if (!$stmt) {
+            throw new Exception('Database error: ' . $conn->error);
+        }
+
+        $stmt->bind_param('i', $saleId);
+
+        if (!$stmt->execute()) {
+            throw new Exception('Database error: ' . $stmt->error);
+        }
+
+        $result = $stmt->get_result();
+        $saleInfo = $result->fetch_assoc();
+        $stmt->close();
+
+        if (!$saleInfo) {
+            throw new Exception('Sale not found');
+        }
+
+        // Get sale details (products)
+        $detailStmt = $conn->prepare('
+            SELECT sd.quantity, sd.price, p.product_name
+            FROM sale_details sd
+            JOIN products p ON p.product_id = sd.product_id
+            WHERE sd.sale_id = ?
+            ORDER BY p.product_name
+        ');
+
+        if (!$detailStmt) {
+            throw new Exception('Database error: ' . $conn->error);
+        }
+
+        $detailStmt->bind_param('i', $saleId);
+
+        if (!$detailStmt->execute()) {
+            $detailStmt->close();
+            throw new Exception('Database error: ' . $detailStmt->error);
+        }
+
+        $detailResult = $detailStmt->get_result();
+        $saleDetails = $detailResult->fetch_all(MYSQLI_ASSOC);
+        $detailStmt->close();
+
+        echo json_encode([
+            'error' => false,
+            'saleInfo' => $saleInfo,
+            'details' => $saleDetails ? $saleDetails : []
+        ]);
+
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode([
+            'error' => true,
+            'message' => $e->getMessage()
+        ]);
+    } catch (Error $e) {
+        http_response_code(500);
+        echo json_encode([
+            'error' => true,
+            'message' => 'Server error: ' . $e->getMessage()
+        ]);
+    }
+    exit;
+}
+
 include __DIR__ . '/includes/header.php';
 ?>
 <div class="app-content-wrapper">
