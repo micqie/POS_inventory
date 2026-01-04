@@ -30,10 +30,31 @@ if (is_post()) {
 
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
+
+    // Check if product has related inventory transactions
+    $checkStmt = $conn->prepare('SELECT COUNT(*) as count FROM inventory_transactions WHERE product_id=?');
+    $checkStmt->bind_param('i', $id);
+    $checkStmt->execute();
+    $result = $checkStmt->get_result()->fetch_assoc();
+
+    if ($result['count'] > 0) {
+        // Delete related inventory transactions first
+        $deleteTransStmt = $conn->prepare('DELETE FROM inventory_transactions WHERE product_id=?');
+        $deleteTransStmt->bind_param('i', $id);
+        $deleteTransStmt->execute();
+        $deleteTransStmt->close();
+    }
+    $checkStmt->close();
+
+    // Now delete the product
     $stmt = $conn->prepare('DELETE FROM products WHERE product_id=?');
     $stmt->bind_param('i', $id);
-    $stmt->execute();
-    flash('success', 'Product deleted.');
+    if ($stmt->execute()) {
+        flash('success', 'Product deleted.');
+    } else {
+        flash('error', 'Failed to delete product. Please try again.');
+    }
+    $stmt->close();
     header('Location: index.php?page=products');
     exit;
 }
@@ -86,7 +107,7 @@ $products = $conn->query('
                     <label class="form-label">Price</label>
                     <input class="form-control" type="number" step="0.01" name="price" required value="<?php echo $editItem['price'] ?? '0'; ?>" placeholder="0.00">
                 </div>
-          
+
                 <div class="form-group" style="display: flex; gap: var(--spacing-md); align-items: flex-end; margin-bottom: 0;">
                     <button class="btn btn-primary" type="submit">
                         <i class="bi bi-<?php echo $editItem ? 'check-circle' : 'plus-circle'; ?>"></i>
