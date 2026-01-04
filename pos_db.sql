@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 24, 2025 at 12:39 PM
+-- Generation Time: Jan 04, 2026 at 08:32 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -67,7 +67,9 @@ CREATE TABLE `customers` (
 INSERT INTO `customers` (`customer_id`, `customer_name`, `contact_number`, `created_at`) VALUES
 (1, 'Juan Dela Cruz', '09112223333', '2025-12-22 02:03:56'),
 (2, 'Maria Santos', '09223334444', '2025-12-22 02:03:56'),
-(3, 'Juan Dela Cruz', '09112223333', '2025-12-22 02:05:56');
+(5, 'micah', NULL, '2025-12-30 07:30:58'),
+(6, 'as', NULL, '2025-12-30 07:48:48'),
+(7, 'asd', '123', '2025-12-30 15:45:47');
 
 -- --------------------------------------------------------
 
@@ -98,7 +100,11 @@ INSERT INTO `inventory_transactions` (`transaction_id`, `product_id`, `supplier_
 (7, 2, 1, 100, 'in', '2025-12-22 02:05:50'),
 (8, 3, 2, 40, 'in', '2025-12-22 02:05:50'),
 (9, 4, 2, 30, 'in', '2025-12-22 02:05:50'),
-(10, 3, NULL, 5, 'out', '2025-12-22 02:05:50');
+(10, 3, NULL, 5, 'out', '2025-12-22 02:05:50'),
+(11, 1, NULL, 2, 'out', '2025-12-30 07:30:58'),
+(12, 6, NULL, 12, 'out', '2025-12-30 07:48:48'),
+(13, 5, NULL, 2, 'out', '2025-12-30 07:48:48'),
+(14, 9, NULL, 2, 'out', '2025-12-31 17:21:59');
 
 -- --------------------------------------------------------
 
@@ -120,16 +126,15 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`product_id`, `category_id`, `product_name`, `price`, `stock`, `created_at`) VALUES
-(1, 1, 'Coca Cola 1.5L', 65.00, 50, '2025-12-22 02:03:56'),
+(1, 1, 'Coca Cola 1.5L', 65.00, 48, '2025-12-22 02:03:56'),
 (2, 1, 'Mineral Water 500ml', 20.00, 100, '2025-12-22 02:03:56'),
 (3, 2, 'Potato Chips', 35.00, 40, '2025-12-22 02:03:56'),
 (4, 3, 'Fresh Milk 1L', 75.00, 30, '2025-12-22 02:03:56'),
-(5, 4, 'Laundry Detergent', 120.00, 25, '2025-12-22 02:03:56'),
-(6, 1, 'Coca Cola 1.5L', 65.00, 50, '2025-12-22 02:05:37'),
+(5, 4, 'Laundry Detergent', 120.00, 23, '2025-12-22 02:03:56'),
+(6, 1, 'Coca Cola 1.5L', 65.00, 38, '2025-12-22 02:05:37'),
 (7, 1, 'Mineral Water 500ml', 20.00, 100, '2025-12-22 02:05:37'),
 (8, 2, 'Potato Chips', 35.00, 40, '2025-12-22 02:05:37'),
-(9, 3, 'Fresh Milk 1L', 75.00, 30, '2025-12-22 02:05:37'),
-(10, 4, 'Laundry Detergent', 120.00, 25, '2025-12-22 02:05:37');
+(9, 3, 'Fresh Milk 1L', 75.00, 28, '2025-12-22 02:05:37');
 
 -- --------------------------------------------------------
 
@@ -150,7 +155,10 @@ CREATE TABLE `sales` (
 --
 
 INSERT INTO `sales` (`sale_id`, `user_id`, `customer_id`, `total_amount`, `sale_date`) VALUES
-(5, 1, 1, 135.00, '2025-12-22 02:06:27');
+(5, 1, 1, 135.00, '2025-12-22 02:06:27'),
+(6, 1, 5, 130.00, '2025-12-30 07:30:58'),
+(7, 1, 6, 1020.00, '2025-12-30 07:48:48'),
+(8, 1, 7, 150.00, '2025-12-31 17:21:59');
 
 -- --------------------------------------------------------
 
@@ -165,6 +173,16 @@ CREATE TABLE `sale_details` (
   `quantity` int(11) NOT NULL,
   `price` decimal(10,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `sale_details`
+--
+
+INSERT INTO `sale_details` (`sale_detail_id`, `sale_id`, `product_id`, `quantity`, `price`) VALUES
+(2, 6, 1, 2, 65.00),
+(3, 7, 6, 12, 65.00),
+(4, 7, 5, 2, 120.00),
+(5, 8, 9, 2, 75.00);
 
 -- --------------------------------------------------------
 
@@ -207,7 +225,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `username`, `password`, `role`, `created_at`) VALUES
-(1, 'admin', '$2y$10$Wd9o834iXFefNVU4Zwtlb.pnfSsn55OiVf0tsqryRfta1Isg3UetS', 'admin', '2025-12-21 14:04:32');
+(1, 'admin', '$2y$10$Wd9o834iXFefNVU4Zwtlb.pnfSsn55OiVf0tsqryRfta1Isg3UetS', 'admin', '2025-12-21 14:04:32'),
+(2, 'cashier', '$2y$10$rwwgDXWc3dElOBxCKBrIW.oLv4s6ZVJEWOS7ItNXMu9V3E2Agvy6K', 'cashier', '2025-12-30 15:41:48'),
+(3, 'cashier2', '$2y$10$JNfS3Ze.QcjzIVdcewr3MOlmCCxqYqVc3oOWy4dmLAMEmkO2jYgPu', 'cashier', '2025-12-30 15:46:22');
 
 --
 -- Indexes for dumped tables
@@ -283,13 +303,13 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT for table `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `customer_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `customer_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `inventory_transactions`
 --
 ALTER TABLE `inventory_transactions`
-  MODIFY `transaction_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `transaction_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -301,13 +321,13 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `sale_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `sale_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `sale_details`
 --
 ALTER TABLE `sale_details`
-  MODIFY `sale_detail_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `sale_detail_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `suppliers`
@@ -319,7 +339,7 @@ ALTER TABLE `suppliers`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
