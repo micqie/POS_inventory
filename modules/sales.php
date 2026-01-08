@@ -4,6 +4,42 @@ if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
+// Handle AJAX request for sale details
+if (isset($_GET['ajax']) && $_GET['ajax'] === 'sale_details' && isset($_GET['sale_id'])) {
+    $saleId = (int)$_GET['sale_id'];
+
+    // Get sale info
+    $stmt = $conn->prepare('
+        SELECT s.sale_id, s.total_amount, s.sale_date,
+               c.customer_name, u.username
+        FROM sales s
+        LEFT JOIN customers c ON c.customer_id = s.customer_id
+        JOIN users u ON u.user_id = s.user_id
+        WHERE s.sale_id = ?
+    ');
+    $stmt->bind_param('i', $saleId);
+    $stmt->execute();
+    $saleInfo = $stmt->get_result()->fetch_assoc();
+
+    // Get sale details with product_name
+    $detailStmt = $conn->prepare('
+        SELECT sd.quantity, sd.price, sd.product_name
+        FROM sale_details sd
+        WHERE sd.sale_id = ?
+        ORDER BY sd.product_name
+    ');
+    $detailStmt->bind_param('i', $saleId);
+    $detailStmt->execute();
+    $details = $detailStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+    header('Content-Type: application/json');
+    echo json_encode([
+        'saleInfo' => $saleInfo,
+        'details' => $details
+    ]);
+    exit;
+}
+
 // Data for selects
 $products = $conn->query('SELECT product_id, product_name, price, stock FROM products ORDER BY product_name')->fetch_all(MYSQLI_ASSOC);
 $customers = $conn->query('SELECT customer_id, customer_name FROM customers ORDER BY customer_name')->fetch_all(MYSQLI_ASSOC);
@@ -111,14 +147,21 @@ if (is_post() && isset($_POST['checkout'])) {
     $saleId = $stmt->insert_id;
 
     // Details + stock update + inventory transaction out
-    $detailStmt = $conn->prepare('INSERT INTO sale_details (sale_id, product_id, quantity, price) VALUES (?,?,?,?)');
+    $detailStmt = $conn->prepare('INSERT INTO sale_details (sale_id, product_name, quantity, price, product_id) VALUES (?,?,?,?,?)');
     foreach ($_SESSION['cart'] as $item) {
         $pid = (int)$item['product_id'];
         $qty = (int)$item['quantity'];
         $price = (float)$item['price'];
-        $detailStmt->bind_param('iiid', $saleId, $pid, $qty, $price);
+        $productName = $item['product_name'];
+
+        // Insert into sale_details with product_name
+        $detailStmt->bind_param('isidd', $saleId, $productName, $qty, $price, $pid);
         $detailStmt->execute();
+
+        // Update stock
         $conn->query("UPDATE products SET stock = stock - {$qty} WHERE product_id = {$pid}");
+
+        // Record inventory transaction
         $conn->query("INSERT INTO inventory_transactions (product_id, quantity, transaction_type) VALUES ({$pid}, {$qty}, 'out')");
     }
 
@@ -137,35 +180,6 @@ $recentSales = $conn->query('
     ORDER BY s.sale_id DESC
     LIMIT 10
 ')->fetch_all(MYSQLI_ASSOC);
-
-// Function to get sale details
-function getSaleDetails($conn, $saleId) {
-    $stmt = $conn->prepare('
-        SELECT sd.quantity, sd.price, p.product_name
-        FROM sale_details sd
-        JOIN products p ON p.product_id = sd.product_id
-        WHERE sd.sale_id = ?
-        ORDER BY p.product_name
-    ');
-
-    if (!$stmt) {
-        return [];
-    }
-
-    $stmt->bind_param('i', $saleId);
-
-    if (!$stmt->execute()) {
-        $stmt->close();
-        return [];
-    }
-
-    $result = $stmt->get_result();
-    $details = $result->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
-
-    return $details ? $details : [];
-}
-
 ?>
 <main>
     <div class="page-header">
@@ -208,7 +222,13 @@ function getSaleDetails($conn, $saleId) {
                 <i class="bi bi-cart-check"></i> Shopping Cart
             </div>
             <div class="card-body">
-                <?php $cartTotal = 0; foreach ($_SESSION['cart'] as $item): $line = $item['price'] * $item['quantity']; $cartTotal += $line; endforeach; ?>
+                <?php
+                $cartTotal = 0;
+                foreach ($_SESSION['cart'] as $item):
+                    $line = $item['price'] * $item['quantity'];
+                    $cartTotal += $line;
+                endforeach;
+                ?>
 
                 <?php if (empty($_SESSION['cart'])): ?>
                     <div class="text-center text-muted" style="padding: var(--spacing-xl);">
@@ -325,7 +345,8 @@ function getSaleDetails($conn, $saleId) {
 </main>
 
 <!-- Sale Details Modal -->
-<div id="saleModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 90%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px; margin-top: 50px; margin-left: 100px;">
+<!-- Sale Details Modal -->
+<div id="saleModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
     <div style="background: white; border-radius: 12px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
         <!-- Modal Header -->
         <div style="background: linear-gradient(135deg, #4e54c8, #8f94fb); color: white; padding: 20px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
@@ -333,9 +354,6 @@ function getSaleDetails($conn, $saleId) {
                 <h3 style="margin: 0; font-size: 1.5rem;">
                     <i class="bi bi-receipt"></i> Sale Details
                 </h3>
-                <div style="font-size: 0.9rem; opacity: 0.9; margin-top: 5px;">
-                    <span id="modalCustomerName">Loading...</span>
-                </div>
             </div>
             <button onclick="closeModal()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 5px;">&times;</button>
         </div>
@@ -350,59 +368,23 @@ function getSaleDetails($conn, $saleId) {
 
             <!-- Content State -->
             <div id="modalContent" style="display: none;">
-                <!-- Sale Information -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                    <!-- Customer Info -->
-                    <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background: #f9f9f9;">
-                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                            <div style="background: #4e54c8; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-                                <i class="bi bi-person"></i>
-                            </div>
-                            <h4 style="margin: 0; font-size: 1.1rem; color: #333;">Customer Information</h4>
-                        </div>
-                        <div style="margin-bottom: 12px;">
-                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 4px;">Customer</div>
-                            <div style="display: flex; align-items: center; font-size: 1rem;">
-                                <i class="bi bi-person-fill" style="color: #4e54c8; margin-right: 8px;"></i>
-                                <span id="modalCustomer" style="font-weight: 500;">Loading...</span>
-                            </div>
-                        </div>
-                        <div style="margin-bottom: 12px;">
-                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 4px;">User</div>
-                            <div style="display: flex; align-items: center; font-size: 1rem;">
-                                <i class="bi bi-person-badge" style="color: #4e54c8; margin-right: 8px;"></i>
-                                <span id="modalUser" style="font-weight: 500;">Loading...</span>
-                            </div>
-                        </div>
-                        <div>
-                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 4px;">Date & Time</div>
-                            <div style="display: flex; align-items: center; font-size: 1rem;">
-                                <i class="bi bi-calendar-event" style="color: #4e54c8; margin-right: 8px;"></i>
-                                <span id="modalDate" style="font-weight: 500;">Loading...</span>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Customer Info -->
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 25px; border: 1px solid #e9ecef;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
 
-                    <!-- Payment Info -->
-                    <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background: #f9f9f9;">
-                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                            <div style="background: #28a745; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-                                <i class="bi bi-currency-dollar"></i>
-                            </div>
-                            <h4 style="margin: 0; font-size: 1.1rem; color: #333;">Payment Information</h4>
-                        </div>
-                        <div>
-                            <div style="font-size: 0.85rem; color: #666; margin-bottom: 4px;">Total Amount</div>
-                            <div style="display: flex; align-items: center; font-size: 1.1rem;">
-                                <i class="bi bi-cash-stack" style="color: #28a745; margin-right: 8px;"></i>
-                                <span id="modalTotal" style="font-weight: 600; color: #28a745;">$0.00</span>
-                            </div>
+
+                    </div>  
+                    <div>
+                        <div style="font-size: 0.9rem; color: #666; margin-bottom: 4px;">Customer Name</div>
+                        <div style="display: flex; align-items: center; font-size: 1rem;">
+                            <i class="bi bi-person-fill" style="color: #4e54c8; margin-right: 8px;"></i>
+                            <span id="modalCustomer" style="font-weight: 500; color: #333;">Loading...</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Products Table -->
-                <div style="margin-top: 30px;">
+                <div style="margin-top: 10px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h4 style="margin: 0; font-size: 1.2rem; color: #333;">
                             <i class="bi bi-cart-check" style="margin-right: 8px;"></i>
@@ -436,10 +418,6 @@ function getSaleDetails($conn, $saleId) {
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Modal Footer -->
-
         </div>
     </div>
 </div>
@@ -495,19 +473,19 @@ function getSaleDetails($conn, $saleId) {
 // Simple modal functions
 function showModal() {
     document.getElementById('saleModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
     document.getElementById('saleModal').style.display = 'none';
-    document.body.style.overflow = 'auto'; // Re-enable scrolling
+    document.body.style.overflow = 'auto';
     resetModal();
 }
 
 function resetModal() {
     document.getElementById('modalContent').style.display = 'none';
     document.getElementById('modalLoading').style.display = 'block';
-    document.getElementById('modalCustomerName').textContent = 'Loading...';
+
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -576,28 +554,9 @@ function loadSaleDetails(saleId) {
             document.getElementById('modalLoading').style.display = 'none';
             document.getElementById('modalContent').style.display = 'block';
 
-            // Update modal title with customer name
+            // Update customer name ONLY in customer info section (removed header line)
             const customerName = data.saleInfo.customer_name || 'Walk-in Customer';
-            document.getElementById('modalCustomerName').textContent = customerName;
-
-            // Update sale information
             document.getElementById('modalCustomer').textContent = customerName;
-            document.getElementById('modalUser').textContent = data.saleInfo.username || 'Unknown User';
-
-            // Format date nicely
-            const saleDate = new Date(data.saleInfo.sale_date);
-            const formattedDate = saleDate.toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            document.getElementById('modalDate').textContent = formattedDate;
-
-            // Update payment info
-            document.getElementById('modalTotal').textContent = '$' + parseFloat(data.saleInfo.total_amount || 0).toFixed(2);
 
             // Update products table
             let productsHTML = '';
@@ -649,7 +608,6 @@ function loadSaleDetails(saleId) {
         })
         .catch(error => {
             console.error('Error loading sale details:', error);
-            console.error('Error details:', error.message);
 
             // Show error message
             document.getElementById('modalLoading').style.display = 'block';
